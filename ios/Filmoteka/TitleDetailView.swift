@@ -227,7 +227,9 @@ private struct DetailHeader: View {
                 chips(detail)
                 if let trailer = detail.trailerURL {
                     Link(destination: trailer) {
+                        // Inside a List row the icon takes the accent tint, i.e. blue on the blue button.
                         Label("Přehrát trailer", systemImage: "play.fill")
+                            .foregroundStyle(.white)
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.horizontal)
