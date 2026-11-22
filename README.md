@@ -18,12 +18,18 @@ Struktura:
 ## 2. TMDB
 
 1. Založ účet na themoviedb.org, v Settings → API vezmi **API Read Access Token (v4)**. Je to dlouhý JWT řetězec začínající `eyJ`, ne `sb_secret_`.
-2. Atribuce: aplikace musí zobrazovat text „This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.“ a logo TMDB (je v dokumentaci TMDB).
-3. Pro komerční použití TMDB nelze; aplikace je jen pro rodinu.
+2. Token drží Edge Function `tmdb` (`supabase/functions/tmdb`), aplikace volá TMDB jen přes ni a jen s přihlášeným uživatelem. Nasazení (Supabase CLI: `brew install supabase/tap/supabase`, `supabase login`):
+   ```
+   supabase secrets set TMDB_TOKEN=eyJ... --project-ref <ref>
+   supabase functions deploy tmdb --no-verify-jwt --project-ref <ref>
+   ```
+   `--no-verify-jwt`: uživatele ověřuje funkce sama (gateway kontrola nepokrývá nové `sb_publishable_` klíče). Funkce propouští jen cesty a parametry, které aplikace používá. Test: `cd supabase/functions/tmdb && deno test --node-modules-dir=auto -A`.
+3. Atribuce: aplikace musí zobrazovat text „This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.“ a logo TMDB (je v dokumentaci TMDB).
+4. Pro komerční použití TMDB nelze; aplikace je jen pro rodinu.
 
 ## 3. iOS aplikace (na Macu)
 
-1. `cp ios/Filmoteka/Config.swift.example ios/Filmoteka/Config.swift` a doplň `tmdbToken`. Soubor je v `.gitignore`.
+1. `cp ios/Filmoteka/Config.swift.example ios/Filmoteka/Config.swift`. Soubor je v `.gitignore`. TMDB token do aplikace nepatří, drží ho Edge Function (krok 2).
 2. Vytvoř Xcode projekt: buď ručně (File → New → Project → iOS App „Filmoteka“, iOS 17+, přidej SPM balíček `https://github.com/supabase/supabase-swift`, produkt `Supabase`, a přetáhni soubory z `ios/Filmoteka/`), nebo přes XcodeGen:
    ```
    brew install xcodegen
@@ -47,6 +53,5 @@ Záložka „Rodina“ (migrace `0004_family.sql`): jeden člen rodinu založí 
 
 ## Known shortcuts
 
-- TMDB token je v aplikaci. Pro rodinu v pohodě; před jakoukoli veřejnou distribucí přesunout volání TMDB do Supabase Edge Function.
 - Měsíc bez dne se ukládá jako 1. den měsíce.
 - Seriály se ukládají po sezónách (volitelně), ne po epizodách. Sezóna 0 = speciály.
