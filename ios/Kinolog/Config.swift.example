@@ -1,0 +1,9 @@
+// Copy this file to Config.swift (same folder, gitignored) and fill in the TMDB token.
+// shortcut: TMDB token ships inside the app, fine for family use; move TMDB calls behind a Supabase Edge Function before public release.
+import Foundation
+
+enum Config {
+    static let supabaseURL = URL(string: "https://ftunhntfrpyoxxuieisz.supabase.co")!
+    static let supabaseKey = "sb_publishable_J0oJsHQyukk2mBkz6onCSQ_Xx-ADK-a"
+    static let tmdbToken = "PASTE_TMDB_V4_READ_ACCESS_TOKEN"
+}

@@ -1,0 +1,145 @@
+import Foundation
+
+// Models are `nonisolated` + `Sendable` so their Codable conformances are not main-actor isolated
+// under Xcode 26's default MainActor isolation: supabase-swift decodes off the main actor.
+
+/// A single watching, as stored in public.viewings (read side).
+nonisolated struct Viewing: Decodable, Identifiable, Sendable {
+    let id: Int
+    let watchedOn: String  // "yyyy-MM-dd"
+    let place: String?
+    let rating: Int?
+    let note: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, place, rating, note
+        case watchedOn = "watched_on"
+    }
+}
+
+/// Insert payload: no id / user_id / created_at, the database fills those.
+nonisolated struct NewViewing: Encodable, Sendable {
+    let tmdbId: Int
+    let mediaType: String
+    let title: String
+    let posterPath: String?
+    let releaseYear: Int?
+    let watchedOn: String  // "yyyy-MM-dd"
+    let place: String?
+    let rating: Int?
+    let note: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title, place, rating, note
+        case tmdbId = "tmdb_id"
+        case mediaType = "media_type"
+        case posterPath = "poster_path"
+        case releaseYear = "release_year"
+        case watchedOn = "watched_on"
+    }
+}
+
+/// A row of public.titles (one per film/series the user has watched).
+nonisolated struct TitleSummary: Decodable, Identifiable, Hashable, Sendable {
+    let mediaType: String
+    let tmdbId: Int
+    let title: String
+    let posterPath: String?
+    let releaseYear: Int?
+    let viewCount: Int
+    let lastWatched: String
+    let avgRating: Double?
+
+    var id: String { "\(mediaType)-\(tmdbId)" }
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case mediaType = "media_type"
+        case tmdbId = "tmdb_id"
+        case posterPath = "poster_path"
+        case releaseYear = "release_year"
+        case viewCount = "view_count"
+        case lastWatched = "last_watched"
+        case avgRating = "avg_rating"
+    }
+}
+
+/// A TMDB search result (movie or tv).
+nonisolated struct TMDBItem: Decodable, Identifiable, Hashable, Sendable {
+    let tmdbId: Int
+    let mediaType: String
+    let title: String
+    let posterPath: String?
+    let releaseYear: Int?
+
+    var id: String { "\(mediaType)-\(tmdbId)" }
+
+    init(tmdbId: Int, mediaType: String, title: String, posterPath: String?, releaseYear: Int?) {
+        self.tmdbId = tmdbId
+        self.mediaType = mediaType
+        self.title = title
+        self.posterPath = posterPath
+        self.releaseYear = releaseYear
+    }
+
+    init(_ t: TitleSummary) {
+        self.init(
+            tmdbId: t.tmdbId, mediaType: t.mediaType, title: t.title,
+            posterPath: t.posterPath, releaseYear: t.releaseYear)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, name
+        case mediaType = "media_type"
+        case posterPath = "poster_path"
+        case releaseDate = "release_date"
+        case firstAirDate = "first_air_date"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        tmdbId = try c.decode(Int.self, forKey: .id)
+        mediaType = try c.decode(String.self, forKey: .mediaType)
+        // movies use title/release_date, series use name/first_air_date
+        title = try c.decodeIfPresent(String.self, forKey: .title)
+            ?? c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        posterPath = try c.decodeIfPresent(String.self, forKey: .posterPath)
+        let date = try c.decodeIfPresent(String.self, forKey: .releaseDate)
+            ?? c.decodeIfPresent(String.self, forKey: .firstAirDate) ?? ""
+        releaseYear = Int(date.prefix(4))
+    }
+}
+
+/// Date-only handling in the device time zone. The database stores "yyyy-MM-dd"; month-only entries store the 1st.
+/// Uses Sendable format styles (not DateFormatter) so the statics are concurrency-safe under any default isolation.
+nonisolated enum DateOnly {
+    private static let czech = Locale(identifier: "cs_CZ")
+    private static let dayText = Date.FormatStyle(locale: czech, calendar: Calendar(identifier: .gregorian))
+        .day().month(.wide).year()
+    private static let monthText = Date.FormatStyle(locale: czech, calendar: Calendar(identifier: .gregorian))
+        .month(.wide).year()
+
+    static func string(from date: Date) -> String {
+        date.formatted(Date.ISO8601FormatStyle(timeZone: .current).year().month().day())
+    }
+
+    static func date(from string: String) -> Date? {
+        let parts = string.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        return Calendar(identifier: .gregorian).date(
+            from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+    }
+
+    /// "5. ledna 2023"; falls back to the raw string if unparsable.
+    static func day(_ string: String) -> String {
+        date(from: string).map { $0.formatted(dayText) } ?? string
+    }
+
+    /// "leden 2023"
+    static func month(_ date: Date) -> String { date.formatted(monthText) }
+
+    static func firstOfMonth(_ date: Date) -> Date {
+        let cal = Calendar(identifier: .gregorian)
+        return cal.date(from: cal.dateComponents([.year, .month], from: date)) ?? date
+    }
+}

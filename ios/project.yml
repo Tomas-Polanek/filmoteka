@@ -1,0 +1,29 @@
+# Generate the Xcode project on a Mac: `brew install xcodegen && cd ios && xcodegen`
+name: Kinolog
+options:
+  bundleIdPrefix: cz.kinolog # change to something unique to you (e.g. cz.<yourname>)
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.0.0
+targets:
+  Kinolog:
+    type: application
+    platform: iOS
+    sources:
+      - path: Kinolog
+        excludes:
+          - "*.example"
+    dependencies:
+      - package: Supabase
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Kinolog
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
