@@ -9,11 +9,48 @@ struct TitlesView: View {
         var id: String { rawValue }
     }
 
+    // Raw values are persisted via @AppStorage, so keep them stable; labels are separate.
+    private enum Sort: String, CaseIterable, Identifiable {
+        case lastWatched, rating, title, viewCount, releaseYear
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .lastWatched: "Naposledy viděno"
+            case .rating: "Hodnocení"
+            case .title: "Název"
+            case .viewCount: "Počet zhlédnutí"
+            case .releaseYear: "Rok vydání"
+            }
+        }
+    }
+
+    /// Strict ordering for `sort`; nil means "tied", falling through to the default tie-break.
+    private static func ordered(_ a: TitleSummary, _ b: TitleSummary, by sort: Sort) -> Bool? {
+        func desc<T: Comparable>(_ x: T?, _ y: T?) -> Bool? {
+            switch (x, y) {
+            case let (x?, y?): x == y ? nil : x > y
+            case (_?, nil): true
+            case (nil, _?): false
+            case (nil, nil): nil
+            }
+        }
+        switch sort {
+        case .lastWatched: return nil
+        case .rating: return desc(a.avgRating, b.avgRating)
+        case .title:
+            let r = a.title.localizedStandardCompare(b.title)
+            return r == .orderedSame ? nil : r == .orderedAscending
+        case .viewCount: return desc(a.viewCount, b.viewCount)
+        case .releaseYear: return desc(a.releaseYear, b.releaseYear)
+        }
+    }
+
     @State private var titles: [TitleSummary] = []
     @State private var loaded = false
     @State private var error: String?
     @State private var search = ""
     @State private var filter = Filter.all
+    @AppStorage("titlesSort") private var sort = Sort.lastWatched
     @State private var adding = false
 
     private var shown: [TitleSummary] {
@@ -25,11 +62,27 @@ struct TitlesView: View {
             }
         }
         .filter { search.isEmpty || $0.title.localizedStandardContains(search) }
+        .sorted { a, b in
+            if let r = Self.ordered(a, b, by: sort) { return r }
+            // dates are "yyyy-MM-dd", so string order is chronological
+            if a.lastWatched != b.lastWatched { return a.lastWatched > b.lastWatched }
+            return a.title.localizedStandardCompare(b.title) == .orderedAscending
+        }
     }
 
     var body: some View {
         NavigationStack {
             List {
+                // A list row rather than a top safe-area inset: the inset covered the large title.
+                Section {
+                    Picker("Typ", selection: $filter) {
+                        ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                }
                 if let error {
                     Text(error).foregroundStyle(.red)
                 }
@@ -41,15 +94,6 @@ struct TitlesView: View {
             .navigationTitle("Filmoteka")
             .navigationDestination(for: TitleSummary.self) { TitleDetailView(title: $0) }
             .searchable(text: $search, prompt: "Hledat v zhlédnutém")
-            .safeAreaInset(edge: .top) {
-                Picker("Typ", selection: $filter) {
-                    ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(.bar)
-            }
             .overlay {
                 if loaded && shown.isEmpty {
                     if titles.isEmpty {
@@ -65,6 +109,15 @@ struct TitlesView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Odhlásit") { Task { await signOut() } }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Řadit podle", selection: $sort) {
+                            ForEach(Sort.allCases) { Text($0.label).tag($0) }
+                        }
+                    } label: {
+                        Label("Řadit", systemImage: "arrow.up.arrow.down")
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { adding = true } label: { Label("Přidat", systemImage: "plus") }
