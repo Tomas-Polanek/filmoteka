@@ -39,6 +39,28 @@ nonisolated struct NewViewing: Encodable, Sendable {
     }
 }
 
+/// Update payload. Encodes nil as JSON null on purpose: the default synthesized Encodable would omit nil keys,
+/// so clearing the place / rating / note in the form would silently keep the old value in the database.
+nonisolated struct ViewingUpdate: Encodable, Sendable {
+    let watchedOn: String  // "yyyy-MM-dd"
+    let place: String?
+    let rating: Int?
+    let note: String?
+
+    enum CodingKeys: String, CodingKey {
+        case place, rating, note
+        case watchedOn = "watched_on"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(watchedOn, forKey: .watchedOn)
+        try c.encode(place, forKey: .place)
+        try c.encode(rating, forKey: .rating)
+        try c.encode(note, forKey: .note)
+    }
+}
+
 /// A row of public.titles (one per film/series the user has watched).
 nonisolated struct TitleSummary: Decodable, Identifiable, Hashable, Sendable {
     let mediaType: String
@@ -141,5 +163,11 @@ nonisolated enum DateOnly {
     static func firstOfMonth(_ date: Date) -> Date {
         let cal = Calendar(identifier: .gregorian)
         return cal.date(from: cal.dateComponents([.year, .month], from: date)) ?? date
+    }
+
+    /// January 1st of the year; used when only the year is known.
+    static func firstOfYear(_ date: Date) -> Date {
+        let cal = Calendar(identifier: .gregorian)
+        return cal.date(from: cal.dateComponents([.year], from: date)) ?? date
     }
 }

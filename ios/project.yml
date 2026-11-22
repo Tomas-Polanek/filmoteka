@@ -1,7 +1,7 @@
 # Generate the Xcode project on a Mac: `brew install xcodegen && cd ios && xcodegen`
 name: Filmoteka
 options:
-  bundleIdPrefix: cz.filmoteka # change to something unique to you (e.g. cz.<yourname>)
+  bundleIdPrefix: cz.polanek
   deploymentTarget:
     iOS: "17.0"
 packages:

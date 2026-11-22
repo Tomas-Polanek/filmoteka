@@ -6,7 +6,20 @@ struct TitleDetailView: View {
 
     @State private var viewings: [Viewing] = []
     @State private var error: String?
-    @State private var adding = false
+    @State private var sheet: Sheet?
+    @State private var toDelete: Viewing?
+
+    private enum Sheet: Identifiable {
+        case add
+        case edit(Viewing)
+
+        var id: String {
+            switch self {
+            case .add: "add"
+            case .edit(let v): "edit-\(v.id)"
+            }
+        }
+    }
 
     private var average: Double? {
         let ratings = viewings.compactMap(\.rating)
@@ -50,9 +63,12 @@ struct TitleDetailView: View {
 
                 Section("Zhlédnutí") {
                     ForEach(viewings) { v in
-                        ViewingRow(viewing: v)
+                        Button { sheet = .edit(v) } label: { ViewingRow(viewing: v) }
+                            .buttonStyle(.plain)
+                            .swipeActions {
+                                Button("Smazat", role: .destructive) { toDelete = v }
+                            }
                     }
-                    .onDelete(perform: delete)
                 }
             }
 
@@ -62,13 +78,26 @@ struct TitleDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Přidat zhlédnutí") { adding = true }
+                Button("Přidat zhlédnutí") { sheet = .add }
             }
         }
         .task { await load() }
         .refreshable { await load() }
-        .sheet(isPresented: $adding, onDismiss: { Task { await load() } }) {
-            AddViewingView(prefill: TMDBItem(title))
+        .sheet(item: $sheet, onDismiss: { Task { await load() } }) { sheet in
+            switch sheet {
+            case .add: AddViewingView(prefill: TMDBItem(title))
+            case .edit(let v): AddViewingView(prefill: TMDBItem(title), editing: v)
+            }
+        }
+        .alert(
+            "Smazat zhlédnutí?",
+            isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }),
+            presenting: toDelete
+        ) { v in
+            Button("Smazat", role: .destructive) { Task { await delete(v) } }
+            Button("Zrušit", role: .cancel) {}
+        } message: { v in
+            Text(DateOnly.day(v.watchedOn))
         }
     }
 
@@ -94,18 +123,13 @@ struct TitleDetailView: View {
         }
     }
 
-    private func delete(at offsets: IndexSet) {
-        let ids = offsets.map { viewings[$0].id }
-        viewings.remove(atOffsets: offsets)
-        Task {
-            do {
-                for id in ids {
-                    try await supabase.from("viewings").delete().eq("id", value: id).execute()
-                }
-            } catch {
-                self.error = error.localizedDescription
-                await load()
-            }
+    private func delete(_ viewing: Viewing) async {
+        viewings.removeAll { $0.id == viewing.id }
+        do {
+            try await supabase.from("viewings").delete().eq("id", value: viewing.id).execute()
+        } catch {
+            self.error = error.localizedDescription
+            await load()
         }
     }
 }
