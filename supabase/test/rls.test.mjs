@@ -1,23 +1,11 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
-import { PGlite } from '@electric-sql/pglite';
+import { setup } from './harness.mjs';
 
 const A = '00000000-0000-0000-0000-00000000000a';
 const B = '00000000-0000-0000-0000-00000000000b';
 
-const db = new PGlite();
-
-// Run `fn` as a Supabase-like role/user; always resets to the superuser afterwards.
-async function as(role, uid, fn) {
-  await db.exec(`set role ${role}`);
-  await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [uid ?? '']);
-  try {
-    return await fn();
-  } finally {
-    await db.exec('reset role');
-  }
-}
+const { db, as } = await setup([A, B]);
 
 const insert = (tmdb, title, day, rating, uid) =>
   uid
@@ -33,26 +21,6 @@ const insert = (tmdb, title, day, rating, uid) =>
       );
 
 before(async () => {
-  // Stub the parts of Supabase the migration depends on.
-  await db.exec(`
-    create role anon nologin;
-    create role authenticated nologin;
-    create schema auth;
-    create table auth.users (id uuid primary key);
-    create function auth.uid() returns uuid language sql stable
-      as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    grant usage on schema auth, public to anon, authenticated;
-    grant execute on function auth.uid() to anon, authenticated;
-    -- Supabase's default privileges on the public schema
-    alter default privileges in schema public grant all on tables to anon, authenticated;
-    insert into auth.users values ('${A}'), ('${B}');
-  `);
-  // Apply every migration in order, like running them one by one in the SQL editor.
-  const dir = new URL('../migrations/', import.meta.url);
-  for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) {
-    await db.exec(readFileSync(new URL(file, dir), 'utf8'));
-  }
-
   await as('authenticated', A, async () => {
     await insert(603, 'The Matrix (old title)', '2020-01-01', 8);
     await insert(603, 'The Matrix', '2024-05-01', 9);

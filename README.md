@@ -1,6 +1,6 @@
 # filmoteka
 
-Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Každý uživatel má vlastní data (Supabase RLS).
+Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Každý uživatel má vlastní data (Supabase RLS); členové jedné rodiny si navzájem vidí deník a „Chci vidět“, upravovat může každý jen svoje.
 
 Struktura:
 - `supabase/` migrace databáze a test izolace dat (`npm install && npm test`)
@@ -8,7 +8,7 @@ Struktura:
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0003_watchlist.sql` pro seznam „Chci vidět“).
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, `0004_family.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0004_family.sql` pro rodinu).
 2. Auth → Providers → Email: nech "Confirm email" zapnuté, nebo ho vypni, ať se nový uživatel může přihlásit hned.
 3. Pozor na e-maily: vestavěný odesílatel posílá jen 2 e-maily za hodinu a jen na členy týmu. Před pozváním rodiny nastav vlastní SMTP (Auth → SMTP settings).
 4. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.
@@ -36,6 +36,14 @@ Struktura:
 
 - Jen pro sebe: zdarma přes Apple ID. Podpis vyprší po 7 dnech, aplikaci pak znovu nainstaluješ z Xcode.
 - Pro rodinu: Apple Developer Program (99 USD/rok) a TestFlight. Build na TestFlightu platí 90 dní.
+
+## 5. Rodina
+
+Záložka „Rodina“ (migrace `0004_family.sql`): jeden člen rodinu založí a pošle ostatním 8znakový kód (velikost písmen nevadí), ti se jím připojí. Každý může být jen v jedné rodině.
+
+- Členové vidí deníky a „Chci vidět“ ostatních (jen ke čtení) a v detailu titulu sekci „Rodina viděla“. Vlastní záložky Deník, Chci vidět a Kalendář dál ukazují jen tvoje data.
+- „Nový kód“ zneplatní starý (kdyby se kód dostal ven). Kdo rodinu opustí, přestane vidět ostatní a oni jeho; poslední člen ji tím zruší.
+- Rodiny a členství mění jen databázové funkce (`create_family`, `join_family`, `leave_family`, `rotate_invite_code`); přímo lze měnit jen vlastní jméno v rodině.
 
 ## Known shortcuts
 

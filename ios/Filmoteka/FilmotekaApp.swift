@@ -11,6 +11,16 @@ let supabase = SupabaseClient(
     supabaseKey: Config.supabaseKey,
     options: SupabaseClientOptions(auth: .init(emitLocalSessionAsInitialSession: true)))
 
+/// The signed-in user's id. Reads of the user's own data MUST filter by it: RLS also returns family members' rows.
+func myUserId() throws -> UUID {
+    guard let id = supabase.auth.currentUser?.id else { throw NotSignedIn() }
+    return id
+}
+
+nonisolated struct NotSignedIn: LocalizedError {
+    var errorDescription: String? { "Nejsi přihlášen." }
+}
+
 @main
 struct FilmotekaApp: App {
     var body: some Scene {
@@ -50,6 +60,8 @@ struct MainTabView: View {
                 .tabItem { Label("Chci vidět", systemImage: "bookmark") }
             TimelineView()
                 .tabItem { Label("Kalendář", systemImage: "calendar") }
+            FamilyView()
+                .tabItem { Label("Rodina", systemImage: "person.3") }
         }
     }
 }
