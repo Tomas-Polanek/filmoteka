@@ -5,3 +5,6 @@ node_modules/
 # iOS secrets (copy ios/Filmoteka/Config.swift.example to Config.swift)
 ios/Filmoteka/Config.swift
 ios/Filmoteka.xcodeproj/
+
+# Supabase CLI cache
+supabase/.temp/
