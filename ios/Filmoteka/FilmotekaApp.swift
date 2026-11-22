@@ -46,6 +46,8 @@ struct MainTabView: View {
         TabView {
             TitlesView()
                 .tabItem { Label("Deník", systemImage: "film.stack") }
+            WatchlistView()
+                .tabItem { Label("Chci vidět", systemImage: "bookmark") }
             TimelineView()
                 .tabItem { Label("Kalendář", systemImage: "calendar") }
         }

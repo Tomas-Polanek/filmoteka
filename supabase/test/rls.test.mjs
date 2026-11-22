@@ -172,3 +172,46 @@ test('seasons: rejected on movies and when negative', async () => {
     );
   });
 });
+
+test('watchlist: owner CRUD, other users isolated, duplicates rejected', async () => {
+  const add = (tmdb, media, title, uid = null) =>
+    db.query(
+      `insert into public.watchlist (user_id, tmdb_id, media_type, title)
+       values (coalesce($4::uuid, auth.uid()), $1, $2, $3) returning id, user_id`,
+      [tmdb, media, title, uid],
+    );
+  try {
+    const id = await as('authenticated', A, async () => {
+      const { rows } = await add(550, 'movie', 'Fight Club');
+      assert.equal(rows[0].user_id, A);
+      await add(550, 'tv', 'Same id, other type'); // unique is per media_type
+      await assert.rejects(add(550, 'movie', 'Fight Club again'), /duplicate key|unique/);
+      const upd = await db.query(`update public.watchlist set note = 'with Eva' where id = $1`, [rows[0].id]);
+      assert.equal(upd.affectedRows, 1);
+      const sel = await db.query(`select note from public.watchlist where id = $1`, [rows[0].id]);
+      assert.equal(sel.rows[0].note, 'with Eva');
+      return rows[0].id;
+    });
+    await as('authenticated', B, async () => {
+      assert.equal((await db.query(`select 1 from public.watchlist`)).rows.length, 0);
+      await assert.rejects(add(1, 'movie', 'Forged', A), /row-level security/);
+      assert.equal((await db.query(`update public.watchlist set title = 'hacked'`)).affectedRows, 0);
+      assert.equal((await db.query(`delete from public.watchlist where id = $1`, [id])).affectedRows, 0);
+      // B may keep the same title on its own list
+      await add(550, 'movie', 'Fight Club');
+      assert.equal((await db.query(`select 1 from public.watchlist`)).rows.length, 1);
+      await assert.rejects(db.query(`update public.watchlist set user_id = $1`, [A]), /row-level security/);
+    });
+    await as('anon', null, async () => {
+      assert.equal((await db.query(`select 1 from public.watchlist`)).rows.length, 0);
+    });
+    await as('authenticated', A, async () => {
+      await assert.rejects(add(2, 'book', 'X'), /check constraint/);
+      assert.equal((await db.query(`delete from public.watchlist where id = $1`, [id])).affectedRows, 1);
+      const { rows } = await db.query(`select title from public.watchlist`);
+      assert.deepEqual(rows.map((r) => r.title), ['Same id, other type']);
+    });
+  } finally {
+    await db.query(`delete from public.watchlist`);
+  }
+});
