@@ -37,6 +37,8 @@ struct AddViewingView: View {
     @State private var customPlace: String
     @State private var rate: Bool
     @State private var rating: Int
+    @State private var hasSeason: Bool
+    @State private var season: Int
     @State private var note: String
     @State private var saving = false
     @State private var saveError: String?
@@ -58,6 +60,8 @@ struct AddViewingView: View {
         _date = State(initialValue: editing.flatMap { DateOnly.date(from: $0.watchedOn) } ?? Date())
         _rate = State(initialValue: editing?.rating != nil)
         _rating = State(initialValue: editing?.rating ?? 7)
+        _hasSeason = State(initialValue: editing?.season != nil)
+        _season = State(initialValue: editing?.season ?? 1)
         _note = State(initialValue: editing?.note ?? "")
     }
 
@@ -213,6 +217,15 @@ struct AddViewingView: View {
                 }
             }
 
+            if item.mediaType == "tv" {
+                Section("Sezóna") {
+                    Toggle("Konkrétní sezóna", isOn: $hasSeason)
+                    if hasSeason {
+                        Stepper(season == 0 ? "Speciály" : "Sezóna \(season)", value: $season, in: 0...99)
+                    }
+                }
+            }
+
             Section("Kde") {
                 Picker("Kde", selection: $place) {
                     ForEach(Self.places, id: \.self) { Text($0).tag($0) }
@@ -263,10 +276,16 @@ struct AddViewingView: View {
         let placeValue = chosenPlace.isEmpty ? nil : chosenPlace
         let ratingValue = rate ? rating : nil
         let noteValue = trimmedNote.isEmpty ? nil : trimmedNote
+        // the database rejects a season on movies; batch mode may carry the toggle over from a series
+        let seasonValue = item.mediaType == "tv" && hasSeason ? season : nil
         do {
             if let editing {
                 try await supabase.from("viewings")
-                    .update(ViewingUpdate(watchedOn: watchedOn, place: placeValue, rating: ratingValue, note: noteValue))
+                    .update(
+                        ViewingUpdate(
+                            watchedOn: watchedOn, place: placeValue, rating: ratingValue, note: noteValue,
+                            season: seasonValue)
+                    )
                     .eq("id", value: editing.id)
                     .execute()
             } else {
@@ -279,7 +298,8 @@ struct AddViewingView: View {
                     watchedOn: watchedOn,
                     place: placeValue,
                     rating: ratingValue,
-                    note: noteValue)
+                    note: noteValue,
+                    season: seasonValue)
                 try await supabase.from("viewings").insert(row).execute()
                 if let placeValue { UserDefaults.standard.set(placeValue, forKey: Self.lastPlaceKey) }
             }

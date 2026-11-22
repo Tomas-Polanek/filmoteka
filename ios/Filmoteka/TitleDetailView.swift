@@ -141,6 +141,10 @@ private struct ViewingRow: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(DateOnly.day(viewing.watchedOn)).font(.headline)
+                if let season = viewing.season {
+                    Text(season == 0 ? "Speciály" : "Sezóna \(season)")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
                 Spacer()
                 if let rating = viewing.rating {
                     Text("★ \(rating)/10")
