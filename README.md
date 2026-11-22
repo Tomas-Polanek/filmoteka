@@ -8,7 +8,7 @@ Struktura:
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → vlož obsah `supabase/migrations/0001_init.sql` → Run.
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, …) → Run.
 2. Auth → Providers → Email: nech "Confirm email" zapnuté, nebo ho vypni, ať se nový uživatel může přihlásit hned.
 3. Pozor na e-maily: vestavěný odesílatel posílá jen 2 e-maily za hodinu a jen na členy týmu. Před pozváním rodiny nastav vlastní SMTP (Auth → SMTP settings).
 4. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.
@@ -41,4 +41,4 @@ Struktura:
 
 - TMDB token je v aplikaci. Pro rodinu v pohodě; před jakoukoli veřejnou distribucí přesunout volání TMDB do Supabase Edge Function.
 - Měsíc bez dne se ukládá jako 1. den měsíce.
-- Seriály se ukládají jako celek, ne po epizodách. Sezónu napiš do poznámky.
+- Seriály se ukládají po sezónách (volitelně), ne po epizodách. Sezóna 0 = speciály.

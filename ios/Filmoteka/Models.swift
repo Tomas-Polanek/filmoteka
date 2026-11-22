@@ -10,9 +10,10 @@ nonisolated struct Viewing: Decodable, Identifiable, Sendable {
     let place: String?
     let rating: Int?
     let note: String?
+    let season: Int?  // tv only; nil = whole series / unspecified, 0 = specials
 
     enum CodingKeys: String, CodingKey {
-        case id, place, rating, note
+        case id, place, rating, note, season
         case watchedOn = "watched_on"
     }
 }
@@ -28,9 +29,10 @@ nonisolated struct NewViewing: Encodable, Sendable {
     let place: String?
     let rating: Int?
     let note: String?
+    let season: Int?
 
     enum CodingKeys: String, CodingKey {
-        case title, place, rating, note
+        case title, place, rating, note, season
         case tmdbId = "tmdb_id"
         case mediaType = "media_type"
         case posterPath = "poster_path"
@@ -40,15 +42,16 @@ nonisolated struct NewViewing: Encodable, Sendable {
 }
 
 /// Update payload. Encodes nil as JSON null on purpose: the default synthesized Encodable would omit nil keys,
-/// so clearing the place / rating / note in the form would silently keep the old value in the database.
+/// so clearing the place / rating / note / season in the form would silently keep the old value in the database.
 nonisolated struct ViewingUpdate: Encodable, Sendable {
     let watchedOn: String  // "yyyy-MM-dd"
     let place: String?
     let rating: Int?
     let note: String?
+    let season: Int?
 
     enum CodingKeys: String, CodingKey {
-        case place, rating, note
+        case place, rating, note, season
         case watchedOn = "watched_on"
     }
 
@@ -58,6 +61,7 @@ nonisolated struct ViewingUpdate: Encodable, Sendable {
         try c.encode(place, forKey: .place)
         try c.encode(rating, forKey: .rating)
         try c.encode(note, forKey: .note)
+        try c.encode(season, forKey: .season)
     }
 }
 

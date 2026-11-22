@@ -1,6 +1,6 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const A = '00000000-0000-0000-0000-00000000000a';
@@ -47,7 +47,11 @@ before(async () => {
     alter default privileges in schema public grant all on tables to anon, authenticated;
     insert into auth.users values ('${A}'), ('${B}');
   `);
-  await db.exec(readFileSync(new URL('../migrations/0001_init.sql', import.meta.url), 'utf8'));
+  // Apply every migration in order, like running them one by one in the SQL editor.
+  const dir = new URL('../migrations/', import.meta.url);
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) {
+    await db.exec(readFileSync(new URL(file, dir), 'utf8'));
+  }
 
   await as('authenticated', A, async () => {
     await insert(603, 'The Matrix (old title)', '2020-01-01', 8);
@@ -118,5 +122,53 @@ test('anon sees nothing', async () => {
   await as('anon', null, async () => {
     assert.equal((await db.query('select * from public.viewings')).rows.length, 0);
     assert.equal((await db.query('select * from public.titles')).rows.length, 0);
+  });
+});
+
+test('seasons: tv viewings take a season, titles still aggregate per series, RLS applies', async () => {
+  const tv = (season, uid = null) =>
+    db.query(
+      `insert into public.viewings (user_id, tmdb_id, media_type, title, watched_on, season)
+       values (coalesce($2::uuid, auth.uid()), 1399, 'tv', 'Game of Thrones', '2024-06-01', $1)`,
+      [season, uid],
+    );
+  try {
+    await as('authenticated', A, async () => {
+      await tv(1);
+      await tv(2);
+      await tv(0); // specials
+      await tv(null); // whole series
+      const { rows } = await db.query(`select season from public.viewings where tmdb_id = 1399 order by season`);
+      assert.deepEqual(rows.map((r) => r.season), [0, 1, 2, null]);
+      const titles = await db.query(`select view_count from public.titles where media_type = 'tv' and tmdb_id = 1399`);
+      assert.equal(titles.rows.length, 1);
+      assert.equal(Number(titles.rows[0].view_count), 4);
+    });
+    await as('authenticated', B, async () => {
+      assert.equal((await db.query(`select 1 from public.viewings where tmdb_id = 1399`)).rows.length, 0);
+      assert.equal((await db.query(`select 1 from public.titles where tmdb_id = 1399`)).rows.length, 0);
+      await assert.rejects(tv(3, A), /row-level security/);
+      const upd = await db.query(`update public.viewings set season = 9 where tmdb_id = 1399`);
+      assert.equal(upd.affectedRows, 0);
+    });
+  } finally {
+    await db.query(`delete from public.viewings where tmdb_id = 1399`);
+  }
+});
+
+test('seasons: rejected on movies and when negative', async () => {
+  await as('authenticated', A, async () => {
+    await assert.rejects(
+      db.query(`insert into public.viewings (tmdb_id, media_type, title, watched_on, season) values (1, 'movie', 'X', '2024-01-01', 1)`),
+      /check constraint/,
+    );
+    await assert.rejects(
+      db.query(`insert into public.viewings (tmdb_id, media_type, title, watched_on, season) values (1, 'tv', 'X', '2024-01-01', -1)`),
+      /check constraint/,
+    );
+    await assert.rejects(
+      db.query(`update public.viewings set season = 1 where media_type = 'movie'`),
+      /check constraint/,
+    );
   });
 });
