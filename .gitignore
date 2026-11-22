@@ -2,6 +2,6 @@ node_modules/
 .env*
 !.env.example
 
-# iOS secrets (copy ios/Kinolog/Config.swift.example to Config.swift)
-ios/Kinolog/Config.swift
-ios/Kinolog.xcodeproj/
+# iOS secrets (copy ios/Filmoteka/Config.swift.example to Config.swift)
+ios/Filmoteka/Config.swift
+ios/Filmoteka.xcodeproj/

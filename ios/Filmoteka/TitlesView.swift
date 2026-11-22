@@ -38,7 +38,7 @@ struct TitlesView: View {
                 }
                 TMDBAttribution()
             }
-            .navigationTitle("Kinolog")
+            .navigationTitle("Filmoteka")
             .navigationDestination(for: TitleSummary.self) { TitleDetailView(title: $0) }
             .searchable(text: $search, prompt: "Hledat v zhlédnutém")
             .safeAreaInset(edge: .top) {

@@ -36,7 +36,7 @@ struct AuthView: View {
                 }
                 .disabled(!canSubmit)
             }
-            .navigationTitle("Kinolog")
+            .navigationTitle("Filmoteka")
         }
     }
 

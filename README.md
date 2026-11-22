@@ -1,4 +1,4 @@
-# kinolog
+# filmoteka
 
 Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Každý uživatel má vlastní data (Supabase RLS).
 
@@ -23,8 +23,8 @@ Struktura:
 
 ## 3. iOS aplikace (na Macu)
 
-1. `cp ios/Kinolog/Config.swift.example ios/Kinolog/Config.swift` a doplň `tmdbToken`. Soubor je v `.gitignore`.
-2. Vytvoř Xcode projekt: buď ručně (File → New → Project → iOS App „Kinolog“, iOS 17+, přidej SPM balíček `https://github.com/supabase/supabase-swift`, produkt `Supabase`, a přetáhni soubory z `ios/Kinolog/`), nebo přes XcodeGen:
+1. `cp ios/Filmoteka/Config.swift.example ios/Filmoteka/Config.swift` a doplň `tmdbToken`. Soubor je v `.gitignore`.
+2. Vytvoř Xcode projekt: buď ručně (File → New → Project → iOS App „Filmoteka“, iOS 17+, přidej SPM balíček `https://github.com/supabase/supabase-swift`, produkt `Supabase`, a přetáhni soubory z `ios/Filmoteka/`), nebo přes XcodeGen:
    ```
    brew install xcodegen
    cd ios && xcodegen
