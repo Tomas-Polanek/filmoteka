@@ -27,7 +27,7 @@ struct RootView: View {
     var body: some View {
         Group {
             if let signedIn {
-                if signedIn { TitlesView() } else { AuthView() }
+                if signedIn { MainTabView() } else { AuthView() }
             } else {
                 ProgressView()
             }
@@ -36,6 +36,16 @@ struct RootView: View {
             for await change in supabase.auth.authStateChanges {
                 signedIn = change.session != nil
             }
+        }
+    }
+}
+
+/// Signed-in shell. Each feature adds its own tab here.
+struct MainTabView: View {
+    var body: some View {
+        TabView {
+            TitlesView()
+                .tabItem { Label("Deník", systemImage: "film.stack") }
         }
     }
 }
