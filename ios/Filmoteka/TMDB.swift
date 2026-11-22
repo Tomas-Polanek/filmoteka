@@ -45,18 +45,21 @@ enum TMDB {
     }
 
     /// The single transport for TMDB API calls. `path` is relative to the API version, e.g. "/movie/11".
+    /// Goes through the `tmdb` Supabase Edge Function, which holds the TMDB token; the user's session authorizes it.
     private static func get<T: Decodable>(_ path: String, query: [String: String]) async throws -> T {
-        var components = URLComponents()
-        components.scheme = "https"
-        components.host = "api.themoviedb.org"
-        components.path = "/3" + path
+        guard var components = URLComponents(
+            url: Config.supabaseURL.appending(path: "functions/v1/tmdb/3" + path), resolvingAgainstBaseURL: false)
+        else { throw URLError(.badURL) }
         components.percentEncodedQueryItems = query.sorted { $0.key < $1.key }.map {
             URLQueryItem(name: $0.key, value: $0.value.addingPercentEncoding(withAllowedCharacters: unreserved))
         }
         guard let url = components.url else { throw URLError(.badURL) }
 
+        // `session` refreshes an expired access token before returning it.
+        let session = try await supabase.auth.session
         var request = URLRequest(url: url)
-        request.setValue("Bearer \(Config.tmdbToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue(Config.supabaseKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let (data, response) = try await URLSession.shared.data(for: request)
