@@ -169,6 +169,7 @@ struct TimelineView: View {
         do {
             viewings = try await supabase.from("viewings")
                 .select("id,tmdb_id,media_type,title,poster_path,release_year,watched_on,rating")
+                .eq("user_id", value: try myUserId())
                 .order("watched_on", ascending: false)
                 .order("id", ascending: false)
                 .execute()

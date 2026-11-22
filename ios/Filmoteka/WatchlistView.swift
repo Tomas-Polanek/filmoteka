@@ -82,6 +82,7 @@ struct WatchlistView: View {
         do {
             items = try await supabase.from("watchlist")
                 .select()
+                .eq("user_id", value: try myUserId())
                 .order("added_at", ascending: false)
                 .order("id", ascending: false)
                 .execute()

@@ -71,6 +71,7 @@ struct TitleDetailView: View {
                     }
                 }
             }
+            FamilyViewingsSection(tmdbId: title.tmdbId, mediaType: title.mediaType)
 
             TMDBAttribution()
         }
@@ -111,6 +112,7 @@ struct TitleDetailView: View {
         do {
             viewings = try await supabase.from("viewings")
                 .select()
+                .eq("user_id", value: try myUserId())
                 .eq("tmdb_id", value: title.tmdbId)
                 .eq("media_type", value: title.mediaType)
                 .order("watched_on", ascending: false)

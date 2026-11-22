@@ -136,6 +136,7 @@ struct TitlesView: View {
         do {
             titles = try await supabase.from("titles")
                 .select()
+                .eq("user_id", value: try myUserId())
                 .order("last_watched", ascending: false)
                 .execute()
                 .value
