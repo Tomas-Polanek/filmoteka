@@ -26,10 +26,10 @@ struct AddViewingView: View {
     /// "Uložit a přidat další" only makes sense when the user picks the title here, not when it is prefilled.
     private let canAddAnother: Bool
 
-    @State private var query = ""
-    @State private var results: [TMDBItem] = []
-    @State private var searchError: String?
     @State private var savedInfo: String?
+
+    /// Called after every successful save (before the sheet dismisses).
+    private let onSaved: (() -> Void)?
 
     @State private var date: Date
     @State private var precision = Precision.day
@@ -43,9 +43,10 @@ struct AddViewingView: View {
     @State private var saving = false
     @State private var saveError: String?
 
-    init(prefill: TMDBItem? = nil, editing: Viewing? = nil) {
+    init(prefill: TMDBItem? = nil, editing: Viewing? = nil, onSaved: (() -> Void)? = nil) {
         _item = State(initialValue: prefill)
         self.editing = editing
+        self.onSaved = onSaved
         canAddAnother = prefill == nil && editing == nil
 
         // Create mode remembers the last used place, so a batch of old films from one source needs no re-picking.
@@ -83,59 +84,10 @@ struct AddViewingView: View {
     // MARK: Step 1
 
     private var searchStep: some View {
-        List {
-            if let savedInfo {
-                Text(savedInfo).foregroundStyle(.green)
-            }
-            if let searchError {
-                Text(searchError).foregroundStyle(.red)
-            }
-            ForEach(results) { r in
-                Button { item = r } label: {
-                    HStack(spacing: 12) {
-                        PosterView(path: r.posterPath, size: "w92").frame(width: 40)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(r.title).font(.headline)
-                            Text(subtitle(r)).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-            TMDBAttribution()
-        }
-        .searchable(
-            text: $query, placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "Hledat film nebo seriál"
-        )
-        .task(id: query) { await runSearch() }
-    }
-
-    private func subtitle(_ r: TMDBItem) -> String {
-        let kind = r.mediaType == "tv" ? "Seriál" : "Film"
-        return r.releaseYear.map { "\(kind) · \($0)" } ?? kind
-    }
-
-    /// Debounced by .task(id:): a new query cancels this task, so only the last keystroke survives the sleep.
-    private func runSearch() async {
-        let q = query.trimmingCharacters(in: .whitespaces)
-        guard !q.isEmpty else {
-            results = []
-            searchError = nil
-            return
-        }
-        savedInfo = nil
-        do {
-            try await Task.sleep(for: .milliseconds(400))
-            let found = try await TMDB.search(q)
-            // URLSession may still deliver after cancellation; never let an outdated query overwrite newer state.
-            guard !Task.isCancelled else { return }
-            results = found
-            searchError = nil
-        } catch is CancellationError {
-        } catch {
-            if !Task.isCancelled { searchError = error.localizedDescription }
-        }
+        TMDBSearchView(
+            message: savedInfo.map { Text($0).foregroundStyle(.green) },
+            onSearch: { savedInfo = nil },
+            onPick: { item = $0 })
     }
 
     // MARK: Step 2
@@ -193,7 +145,7 @@ struct AddViewingView: View {
                     PosterView(path: item.posterPath, size: "w92").frame(width: 50)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.title).font(.headline)
-                        Text(subtitle(item)).font(.subheadline).foregroundStyle(.secondary)
+                        Text(item.kindAndYear).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -307,13 +259,12 @@ struct AddViewingView: View {
             saveError = error.localizedDescription
             return
         }
+        onSaved?()
 
         if addAnother {
             // keep date, precision and place: old films usually come in batches from the same period/source
             savedInfo = "Uloženo: \(item.title)"
-            self.item = nil
-            query = ""
-            results = []
+            self.item = nil  // swaps in a fresh TMDBSearchView with an empty query
             note = ""
             rate = false
             rating = 7

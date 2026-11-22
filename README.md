@@ -8,7 +8,7 @@ Struktura:
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, …) → Run.
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0003_watchlist.sql` pro seznam „Chci vidět“).
 2. Auth → Providers → Email: nech "Confirm email" zapnuté, nebo ho vypni, ať se nový uživatel může přihlásit hned.
 3. Pozor na e-maily: vestavěný odesílatel posílá jen 2 e-maily za hodinu a jen na členy týmu. Před pozváním rodiny nastav vlastní SMTP (Auth → SMTP settings).
 4. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.

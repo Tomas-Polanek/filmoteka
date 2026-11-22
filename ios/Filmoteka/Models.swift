@@ -90,6 +90,52 @@ nonisolated struct TitleSummary: Decodable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// A row of public.watchlist ("Chci vidět").
+nonisolated struct WatchlistItem: Decodable, Identifiable, Sendable {
+    let id: Int
+    let tmdbId: Int
+    let mediaType: String
+    let title: String
+    let posterPath: String?
+    let releaseYear: Int?
+    let note: String?
+    let addedAt: String  // timestamptz as returned by PostgREST; only the database sorts by it
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, note
+        case tmdbId = "tmdb_id"
+        case mediaType = "media_type"
+        case posterPath = "poster_path"
+        case releaseYear = "release_year"
+        case addedAt = "added_at"
+    }
+}
+
+/// Watchlist insert payload: id / user_id / added_at come from the database.
+nonisolated struct NewWatchlistItem: Encodable, Sendable {
+    let tmdbId: Int
+    let mediaType: String
+    let title: String
+    let posterPath: String?
+    let releaseYear: Int?
+
+    init(_ item: TMDBItem) {
+        tmdbId = item.tmdbId
+        mediaType = item.mediaType
+        title = item.title
+        posterPath = item.posterPath
+        releaseYear = item.releaseYear
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case tmdbId = "tmdb_id"
+        case mediaType = "media_type"
+        case posterPath = "poster_path"
+        case releaseYear = "release_year"
+    }
+}
+
 /// A TMDB search result (movie or tv).
 nonisolated struct TMDBItem: Decodable, Identifiable, Hashable, Sendable {
     let tmdbId: Int
@@ -112,6 +158,12 @@ nonisolated struct TMDBItem: Decodable, Identifiable, Hashable, Sendable {
         self.init(
             tmdbId: t.tmdbId, mediaType: t.mediaType, title: t.title,
             posterPath: t.posterPath, releaseYear: t.releaseYear)
+    }
+
+    init(_ w: WatchlistItem) {
+        self.init(
+            tmdbId: w.tmdbId, mediaType: w.mediaType, title: w.title,
+            posterPath: w.posterPath, releaseYear: w.releaseYear)
     }
 
     enum CodingKeys: String, CodingKey {
