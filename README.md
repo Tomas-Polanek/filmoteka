@@ -1,17 +1,16 @@
 # filmoteka
 
-Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Každý uživatel má vlastní data (Supabase RLS); členové jedné rodiny si navzájem vidí deník a „Chci vidět“, upravovat může každý jen svoje.
+Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Přihlašuje se uživatelským jménem a heslem. Každý uživatel má vlastní data (Supabase RLS), deník a „Chci vidět“ nevidí nikdo jiný, ani správce.
 
 Struktura:
-- `supabase/` migrace databáze a test izolace dat (`npm install && npm test`)
+- `supabase/` migrace databáze a test izolace dat (`npm install && npm test`), Edge Functions `tmdb` a `admin`
 - `ios/` SwiftUI aplikace (iOS 17+). Sestavuje se jen na Macu.
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, `0004_family.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0004_family.sql` pro rodinu).
-2. Auth → Providers → Email: nech "Confirm email" zapnuté, nebo ho vypni, ať se nový uživatel může přihlásit hned.
-3. Pozor na e-maily: vestavěný odesílatel posílá jen 2 e-maily za hodinu a jen na členy týmu. Před pozváním rodiny nastav vlastní SMTP (Auth → SMTP settings).
-4. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, `0004_family.sql`, `0005_remove_family_add_profiles.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0005_remove_family_add_profiles.sql`: zruší Rodinu, přidá uživatelská jména a role, pak pokračuj krokem 5).
+2. Authentication → Sign In / Providers → Email: provider nech zapnutý, **„Confirm email“ vypni** a registraci („Allow new users to sign up“) nech povolenou. Aplikace se přihlašuje uživatelským jménem; e-mail `<jméno>@users.filmoteka.app` je jen interní, žádný e-mail se neposílá a v aplikaci se nikde neukazuje. Se zapnutým potvrzením by se nový účet nikdy nepřihlásil. Minimální délka hesla: 6 znaků (výchozí; aplikace i funkce `admin` vyžadují aspoň 6).
+3. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.
 
 **Klíče:** do aplikace patří jen `sb_publishable_...` (publishable). Klíč `sb_secret_...` nikdy do aplikace ani do repozitáře. Pokud jsi ho někam vložil (třeba do chatu), vytvoř nový v Settings → API Keys, nahraď ho všude a starý smaž.
 
@@ -43,13 +42,38 @@ Struktura:
 - Jen pro sebe: zdarma přes Apple ID. Podpis vyprší po 7 dnech, aplikaci pak znovu nainstaluješ z Xcode.
 - Pro rodinu: Apple Developer Program (99 USD/rok) a TestFlight. Build na TestFlightu platí 90 dní.
 
-## 5. Rodina
+## 5. Účty a role
 
-Záložka „Rodina“ (migrace `0004_family.sql`): jeden člen rodinu založí a pošle ostatním 8znakový kód (velikost písmen nevadí), ti se jím připojí. Každý může být jen v jedné rodině.
+Migrace `0005_remove_family_add_profiles.sql` přidává tabulku `public.profiles`: uživatelské jméno, role (`admin` nebo `user`) a vlastní seznam míst „Kde“ (`places`, `null` = výchozí seznam aplikace). Profil založí trigger `on_auth_user_created` při registraci podle jména z metadat (nebo z části interního e-mailu před `@`).
 
-- Členové vidí deníky a „Chci vidět“ ostatních (jen ke čtení) a v detailu titulu sekci „Rodina viděla“. Vlastní záložky Deník, Chci vidět a Kalendář dál ukazují jen tvoje data.
-- „Nový kód“ zneplatní starý (kdyby se kód dostal ven). Kdo rodinu opustí, přestane vidět ostatní a oni jeho; poslední člen ji tím zruší.
-- Rodiny a členství mění jen databázové funkce (`create_family`, `join_family`, `leave_family`, `rotate_invite_code`); přímo lze měnit jen vlastní jméno v rodině.
+- Uživatelské jméno: 3–32 znaků, malá písmena bez diakritiky, číslice, `.`, `_`, `-`; začíná písmenem nebo číslicí. Je jedinečné a nemění se (odvozuje se z něj přihlašovací e-mail).
+- Registrace v aplikaci je otevřená, nový účet má roli `user`. Každý mění jen svoje heslo a svůj seznam míst; roli ani jméno si nezmění.
+- Správce (`admin`) v aplikaci zakládá a maže účty, nastavuje jim hesla a uděluje/odebírá roli správce. Sám sebe smazat nemůže a poslední správce musí zůstat. Cizí deníky nevidí.
+- Správu dělá Edge Function `admin` (`supabase/functions/admin`): ověří volajícího, zkontroluje jeho roli a změny provede se service role klíčem. `SUPABASE_URL` a `SUPABASE_SERVICE_ROLE_KEY` nastavuje Supabase funkcím sám, žádný secret navíc. Nasazení:
+  ```
+  supabase functions deploy admin --no-verify-jwt --project-ref <ref>
+  ```
+  `--no-verify-jwt` ze stejného důvodu jako u `tmdb`. Test: `cd supabase/functions/admin && deno test --node-modules-dir=auto -A`.
+
+**První správce** (jednorázově po registraci, SQL Editor):
+```sql
+update public.profiles set role = 'admin' where username = 'tvoje-jmeno';
+```
+
+**Účty založené před `0005`** (s opravdovým e-mailem): migrace jim dala jméno z metadat nebo z části e-mailu před `@` (obsazené nebo krátké dostane číslo, např. `tom1`). Zkontroluj je (`select username, role from public.profiles;`), případně přejmenuj (`update public.profiles set username = 'nove-jmeno' where username = 'tom1';`) a pak je jednorázově převeď na přihlašování jménem:
+```sql
+update auth.users u
+set email = p.username || '@users.filmoteka.app',
+    email_confirmed_at = coalesce(u.email_confirmed_at, now())
+from public.profiles p
+where p.user_id = u.id and u.email not like '%@users.filmoteka.app';
+
+update auth.identities i
+set identity_data = i.identity_data || jsonb_build_object('email', u.email)
+from auth.users u
+where i.user_id = u.id and i.provider = 'email' and u.email like '%@users.filmoteka.app';
+```
+Pak se přihlásí jménem a dosavadním heslem. Původní e-maily tím z projektu zmizí.
 
 ## Known shortcuts
 

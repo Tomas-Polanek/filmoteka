@@ -4,14 +4,20 @@ import { PGlite } from '@electric-sql/pglite';
 /**
  * Fresh in-memory database with the Supabase parts the migrations depend on stubbed, the given auth users
  * created and every migration applied in order, like running them one by one in the SQL editor.
+ * Users are ids or `{ id, email, meta }` (meta = raw_user_meta_data); they exist before the migrations run.
  */
-export async function setup(userIds) {
+export async function setup(users) {
   const db = new PGlite();
   await db.exec(`
     create role anon nologin;
     create role authenticated nologin;
     create schema auth;
-    create table auth.users (id uuid primary key);
+    create table auth.users (
+      id                 uuid primary key,
+      email              text,
+      raw_user_meta_data jsonb,
+      created_at         timestamptz not null default now()
+    );
     create function auth.uid() returns uuid language sql stable
       as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     grant usage on schema auth, public to anon, authenticated;
@@ -19,7 +25,7 @@ export async function setup(userIds) {
     -- Supabase's default privileges on the public schema
     alter default privileges in schema public grant all on tables to anon, authenticated;
   `);
-  for (const id of userIds) await db.query('insert into auth.users values ($1)', [id]);
+  for (const u of users) await addUser(db, typeof u === 'string' ? { id: u } : u);
   const dir = new URL('../migrations/', import.meta.url);
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) {
     await db.exec(readFileSync(new URL(file, dir), 'utf8'));
@@ -36,5 +42,14 @@ export async function setup(userIds) {
     }
   }
 
-  return { db, as };
+  return { db, as, addUser: (user) => addUser(db, user) };
+}
+
+/** Inserts an auth user the way GoTrue does on signup (as the superuser, so the profile trigger fires). */
+function addUser(db, { id, email = null, meta = null }) {
+  return db.query('insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)', [
+    id,
+    email,
+    meta == null ? null : JSON.stringify(meta),
+  ]);
 }
