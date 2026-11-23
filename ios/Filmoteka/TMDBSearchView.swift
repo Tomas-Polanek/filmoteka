@@ -37,7 +37,6 @@ struct TMDBSearchView: View {
                 }
                 .buttonStyle(.plain)
             }
-            TMDBAttribution()
         }
         .searchable(
             text: $query, placement: .navigationBarDrawer(displayMode: .always),

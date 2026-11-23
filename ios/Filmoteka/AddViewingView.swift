@@ -5,11 +5,7 @@ import Supabase
 /// - create: step 1 picks a film/series via TMDB search (skipped when `prefill` is given), step 2 fills in the viewing.
 /// - edit (`editing` given): goes straight to step 2 with the stored values.
 struct AddViewingView: View {
-    private static let places = [
-        "Jellyfin", "Netflix", "HBO Max", "Disney+", "Prime Video",
-        "Apple TV+", "SkyShowtime", "Kino", "TV", "Jiné",
-    ]
-    private static let other = "Jiné"
+    private static let other = Places.other
     private static let lastPlaceKey = "lastPlace"
     private static let calendar = Calendar(identifier: .gregorian)
 
@@ -21,6 +17,7 @@ struct AddViewingView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(ProfileStore.self) private var profileStore
     @State private var item: TMDBItem?
     private let editing: Viewing?
     /// "Uložit a přidat další" only makes sense when the user picks the title here, not when it is prefilled.
@@ -33,8 +30,10 @@ struct AddViewingView: View {
 
     @State private var date: Date
     @State private var precision = Precision.day
+    /// Before `resolvePlace()` runs: the stored place as is ("" = none).
     @State private var place: String
-    @State private var customPlace: String
+    @State private var customPlace = ""
+    @State private var placeResolved = false
     @State private var rate: Bool
     @State private var rating: Int
     @State private var hasSeason: Bool
@@ -50,14 +49,7 @@ struct AddViewingView: View {
         canAddAnother = prefill == nil && editing == nil
 
         // Create mode remembers the last used place, so a batch of old films from one source needs no re-picking.
-        let storedPlace = editing?.place ?? UserDefaults.standard.string(forKey: Self.lastPlaceKey)
-        if let storedPlace, !storedPlace.isEmpty, !Self.places.contains(storedPlace) {
-            _place = State(initialValue: Self.other)
-            _customPlace = State(initialValue: storedPlace)
-        } else {
-            _place = State(initialValue: storedPlace.flatMap { $0.isEmpty ? nil : $0 } ?? Self.places[0])
-            _customPlace = State(initialValue: "")
-        }
+        _place = State(initialValue: editing?.place ?? UserDefaults.standard.string(forKey: Self.lastPlaceKey) ?? "")
         _date = State(initialValue: editing.flatMap { DateOnly.date(from: $0.watchedOn) } ?? Date())
         _rate = State(initialValue: editing?.rating != nil)
         _rating = State(initialValue: editing?.rating ?? 7)
@@ -77,7 +69,34 @@ struct AddViewingView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Zrušit") { dismiss() }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    if let item {
+                        Button(editing != nil ? "Uložit změny" : "Uložit") {
+                            Task { await save(item, addAnother: false) }
+                        }
+                        .disabled(saving)
+                    }
+                }
             }
+            .onAppear(perform: resolvePlace)
+        }
+    }
+
+    // MARK: Place
+
+    /// The user's places plus "Jiné" (free text), which is always offered last.
+    private var placeOptions: [String] { profileStore.places.filter { $0 != Self.other } + [Self.other] }
+
+    /// Maps the stored place onto the picker once: none picks the first option, an unlisted one becomes "Jiné" + text.
+    private func resolvePlace() {
+        guard !placeResolved else { return }
+        placeResolved = true
+        let options = placeOptions
+        if place.isEmpty {
+            place = options[0]
+        } else if !options.contains(place) {
+            customPlace = place
+            place = Self.other
         }
     }
 
@@ -180,7 +199,7 @@ struct AddViewingView: View {
 
             Section("Kde") {
                 Picker("Kde", selection: $place) {
-                    ForEach(Self.places, id: \.self) { Text($0).tag($0) }
+                    ForEach(placeOptions, id: \.self) { Text($0).tag($0) }
                 }
                 if place == Self.other {
                     TextField("Kde jinde", text: $customPlace)
@@ -203,10 +222,8 @@ struct AddViewingView: View {
                 Section { Text(saveError).foregroundStyle(.red) }
             }
 
-            Section {
-                Button(editing != nil ? "Uložit změny" : "Uložit") { Task { await save(item, addAnother: false) } }
-                    .disabled(saving)
-                if canAddAnother {
+            if canAddAnother {
+                Section {
                     Button("Uložit a přidat další") { Task { await save(item, addAnother: true) } }
                         .disabled(saving)
                 }

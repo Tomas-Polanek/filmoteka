@@ -90,19 +90,3 @@ struct PosterView: View {
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 }
-
-/// TMDB attribution notice required by the TMDB API terms; put it as the last section of a list.
-struct TMDBAttribution: View {
-    var body: some View {
-        Section {
-        } footer: {
-            VStack(spacing: 4) {
-                Text("Tato aplikace používá TMDB a TMDB API, ale není schválena, certifikována ani jinak podporována společností TMDB.")
-                Text("This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.")
-            }
-            .font(.caption2)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-        }
-    }
-}

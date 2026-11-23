@@ -11,7 +11,7 @@ let supabase = SupabaseClient(
     supabaseKey: Config.supabaseKey,
     options: SupabaseClientOptions(auth: .init(emitLocalSessionAsInitialSession: true)))
 
-/// The signed-in user's id. Reads of the user's own data MUST filter by it: RLS also returns family members' rows.
+/// The signed-in user's id. Reads of the user's own data filter by it, as a defensive complement to RLS.
 func myUserId() throws -> UUID {
     guard let id = supabase.auth.currentUser?.id else { throw NotSignedIn() }
     return id
@@ -33,19 +33,30 @@ struct FilmotekaApp: App {
 struct RootView: View {
     /// nil until the first auth event (initial session) arrives.
     @State private var signedIn: Bool?
+    @State private var userId: UUID?
+    @State private var profileStore = ProfileStore()
+    @AppStorage(Theme.storageKey) private var theme = Theme.system
+    @AppStorage(Accent.storageKey) private var accent = Accent.blue
 
     var body: some View {
         Group {
             if let signedIn {
-                if signedIn { MainTabView() } else { AuthView() }
+                if signedIn { MainTabView().environment(profileStore) } else { AuthView() }
             } else {
                 ProgressView()
             }
         }
+        .preferredColorScheme(theme.colorScheme)
+        .tint(accent.color)
         .task {
             for await change in supabase.auth.authStateChanges {
                 signedIn = change.session != nil
+                userId = change.session?.user.id
             }
+        }
+        // (re)loads the profile whenever a different user signs in
+        .task(id: userId) {
+            if userId != nil { await profileStore.load() } else { profileStore.clear() }
         }
     }
 }
@@ -60,8 +71,8 @@ struct MainTabView: View {
                 .tabItem { Label("Chci vidět", systemImage: "bookmark") }
             TimelineView()
                 .tabItem { Label("Kalendář", systemImage: "calendar") }
-            FamilyView()
-                .tabItem { Label("Rodina", systemImage: "person.3") }
+            SettingsView()
+                .tabItem { Label("Nastavení", systemImage: "gearshape") }
         }
     }
 }
