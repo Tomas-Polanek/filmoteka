@@ -95,8 +95,6 @@ struct TimelineView: View {
                     }
                 }
             }
-
-            TMDBAttribution()
         }
     }
 
@@ -119,7 +117,6 @@ struct TimelineView: View {
                     }
                 }
             }
-            TMDBAttribution()
         }
     }
 

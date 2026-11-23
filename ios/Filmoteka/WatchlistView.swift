@@ -52,7 +52,6 @@ struct WatchlistView: View {
                                 .tint(.green)
                         }
                 }
-                TMDBAttribution()
             }
             .navigationTitle("Chci vidět")
             .overlay {

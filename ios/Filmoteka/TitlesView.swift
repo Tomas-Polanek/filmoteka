@@ -89,7 +89,6 @@ struct TitlesView: View {
                 ForEach(shown) { t in
                     NavigationLink(value: t) { TitleRow(title: t) }
                 }
-                TMDBAttribution()
             }
             .navigationTitle("Filmoteka")
             .navigationDestination(for: TitleSummary.self) { TitleDetailView(title: $0) }
@@ -107,9 +106,6 @@ struct TitlesView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Odhlásit") { Task { await signOut() } }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Picker("Řadit podle", selection: $sort) {
@@ -145,14 +141,6 @@ struct TitlesView: View {
             if !Task.isCancelled { self.error = error.localizedDescription }
         }
         loaded = true
-    }
-
-    private func signOut() async {
-        do {
-            try await supabase.auth.signOut(scope: .local)
-        } catch {
-            self.error = error.localizedDescription
-        }
     }
 }
 

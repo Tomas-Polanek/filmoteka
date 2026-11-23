@@ -73,7 +73,6 @@ struct TitleDetailView: View {
                     }
                 }
             }
-            FamilyViewingsSection(tmdbId: title.tmdbId, mediaType: title.mediaType)
 
             if let detail {
                 if !detail.seasons.isEmpty {
@@ -94,8 +93,6 @@ struct TitleDetailView: View {
                     }
                 }
             }
-
-            TMDBAttribution()
         }
         .listStyle(.grouped)
         // Let the backdrop start right under the navigation bar.

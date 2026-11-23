@@ -2,21 +2,22 @@ import SwiftUI
 import Supabase
 
 struct AuthView: View {
-    @State private var email = ""
+    @State private var username = ""
     @State private var password = ""
     @State private var busy = false
     @State private var error: String?
     @State private var info: String?
 
-    private var canSubmit: Bool { !email.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty && !busy }
+    private var canSubmit: Bool {
+        !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty && !busy
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("E-mail", text: $email)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
+                    TextField("Uživatelské jméno", text: $username)
+                        .textContentType(.username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                     SecureField("Heslo", text: $password)
@@ -41,21 +42,29 @@ struct AuthView: View {
     }
 
     private func submit(signUp: Bool) async {
-        busy = true
         error = nil
         info = nil
+        guard let name = Account.normalize(username) else {
+            error = signUp ? Account.usernameHint : "Špatné jméno nebo heslo"
+            return
+        }
+        if signUp && !Account.isValidPassword(password) {
+            error = Account.passwordHint
+            return
+        }
+        busy = true
         defer { busy = false }
-        let address = email.trimmingCharacters(in: .whitespaces)
         do {
             if signUp {
-                let response = try await supabase.auth.signUp(email: address, password: password)
-                // .session: signed in, authStateChanges switches the root view. .user: awaiting e-mail confirmation.
-                if case .user = response { info = "Zkontroluj e-mail a potvrď registraci" }
+                let response = try await supabase.auth.signUp(
+                    email: Account.email(for: name), password: password, data: ["username": .string(name)])
+                // .session: signed in, authStateChanges switches the root view. .user: the project requires confirmation.
+                if case .user = response { info = "Účet je založený, ale čeká na potvrzení. Požádej správce." }
             } else {
-                try await supabase.auth.signIn(email: address, password: password)
+                try await supabase.auth.signIn(email: Account.email(for: name), password: password)
             }
         } catch {
-            self.error = error.localizedDescription
+            self.error = Account.message(for: error)
         }
     }
 }

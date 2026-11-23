@@ -23,8 +23,7 @@ Struktura:
    supabase functions deploy tmdb --no-verify-jwt --project-ref <ref>
    ```
    `--no-verify-jwt`: uživatele ověřuje funkce sama (gateway kontrola nepokrývá nové `sb_publishable_` klíče). Funkce propouští jen cesty a parametry, které aplikace používá. Test: `cd supabase/functions/tmdb && deno test --node-modules-dir=auto -A`.
-3. Atribuce: aplikace musí zobrazovat text „This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.“ a logo TMDB (je v dokumentaci TMDB).
-4. Pro komerční použití TMDB nelze; aplikace je jen pro rodinu.
+3. Pro komerční použití TMDB nelze; aplikace je jen pro rodinu.
 
 ## 3. iOS aplikace (na Macu)
 
@@ -36,6 +35,7 @@ Struktura:
    ```
    (v `project.yml` změň `bundleIdPrefix` na svůj.)
 3. Spusť na simulátoru nebo iPhonu.
+4. Účet je jen uživatelské jméno + heslo. Záložka „Nastavení“: změna hesla, motiv a barva, vlastní seznam míst („Kde“); správce tam navíc zakládá a maže účty, nastavuje hesla a role (Edge Function `admin`).
 
 ## 4. Instalace na iPhone
 
