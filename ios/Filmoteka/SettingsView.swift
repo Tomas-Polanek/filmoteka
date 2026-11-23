@@ -47,6 +47,8 @@ struct SettingsView: View {
                     }
                 }
 
+                AboutSection()
+
                 Section {
                     Button("Odhlásit", role: .destructive) { confirmSignOut = true }
                 } footer: {

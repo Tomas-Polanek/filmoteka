@@ -75,6 +75,16 @@ where i.user_id = u.id and i.provider = 'email' and u.email like '%@users.filmot
 ```
 Pak se přihlásí jménem a dosavadním heslem. Původní e-maily tím z projektu zmizí.
 
+## 6. Verze a „Co je nového“
+
+Aplikace je v betě (verze `0.x.y`). Každá změna, kterou uživatel uvidí, dostane záznam v `CHANGELOG.md`:
+
+1. Nahoru do `CHANGELOG.md` přidej `## <verze> (<YYYY-MM-DD>)` a pod něj odrážky `- ` psané pro uživatele (co je jinak, ne jak je to naprogramované).
+2. V `ios/project.yml` nastav stejnou verzi do `MARKETING_VERSION` a zvyš `CURRENT_PROJECT_VERSION` (číslo buildu) o 1.
+3. `cd ios && xcodegen`. Build selže, pokud se verze v changelogu a v `project.yml` neshodují.
+
+Verze: oprava = `0.4.0 → 0.4.1`, nové funkce = `0.4.1 → 0.5.0`, první ostrá verze = `1.0.0`. Aplikace po aktualizaci jednou ukáže „Co je nového“ pro aktuální verzi; celá historie je v Nastavení → O aplikaci.
+
 ## Known shortcuts
 
 - Měsíc bez dne se ukládá jako 1. den měsíce.

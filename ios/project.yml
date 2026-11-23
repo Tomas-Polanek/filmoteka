@@ -16,6 +16,20 @@ targets:
       - path: Filmoteka
         excludes:
           - "*.example"
+      # User-facing changelog, shown in the app (Nastavení → O aplikaci, "Co je nového" after an update).
+      - path: ../CHANGELOG.md
+        buildPhase: resources
+    preBuildScripts:
+      - name: Check CHANGELOG version
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - $(SRCROOT)/../CHANGELOG.md
+        script: |
+          top=$(grep -m1 -E '^## [0-9]' "$SRCROOT/../CHANGELOG.md" | sed -E 's/^## ([^ ]+).*/\1/')
+          if [ "$top" != "$MARKETING_VERSION" ]; then
+            echo "error: CHANGELOG.md newest version ($top) does not match MARKETING_VERSION ($MARKETING_VERSION). Add a changelog entry or bump the version."
+            exit 1
+          fi
     dependencies:
       - package: Supabase
     settings:
@@ -26,7 +40,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         DEVELOPMENT_TEAM: H68TQVGXBT
         CODE_SIGN_STYLE: Automatic
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.4.0"
+        CURRENT_PROJECT_VERSION: "5"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"

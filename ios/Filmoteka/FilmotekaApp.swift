@@ -74,5 +74,6 @@ struct MainTabView: View {
             SettingsView()
                 .tabItem { Label("Nastavení", systemImage: "gearshape") }
         }
+        .whatsNewOnUpdate()
     }
 }
