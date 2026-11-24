@@ -2,6 +2,9 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.6.2 (2026-11-25)
+- Propojení s Jellyfinem ukáže při chybě skutečný důvod místo obecné hlášky.
+
 ## 0.6.1 (2026-11-25)
 - Správce propojí Jellyfin i za ostatní: Nastavení → Uživatelé → uživatel → Jellyfin. Jejich deník tím nevidí.
 

@@ -21,6 +21,13 @@ function randomToken(): string {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+function dbError(error: { message: string; code?: string }): Error {
+  if (error.code === "42501" || /row-level security/i.test(error.message)) {
+    return new Error("Na tohle nemáš v databázi oprávnění (správce potřebuje migraci 0007_integrations_admin.sql).");
+  }
+  return new Error(error.message);
+}
+
 // Every call names the account explicitly: admins can see every connection, so an unfiltered
 // delete would remove other users' connections too. Without `userId` it is the signed-in user.
 
@@ -35,7 +42,7 @@ export async function getIntegration(
     .eq("user_id", uid)
     .eq("provider", provider)
     .maybeSingle();
-  if (error) throw error;
+  if (error) throw dbError(error);
   return (data as Integration | null) ?? null;
 }
 
@@ -49,14 +56,14 @@ export async function connectIntegration(provider: IntegrationProvider, userId?:
   const tokenHash = await sha256Hex(token);
   await disconnectIntegration(provider, uid);
   const { error } = await supabase.from("integrations").insert({ user_id: uid, provider, token_hash: tokenHash });
-  if (error) throw error;
+  if (error) throw dbError(error);
   return token;
 }
 
 export async function disconnectIntegration(provider: IntegrationProvider, userId?: string): Promise<void> {
   const uid = userId ?? (await getMyUserId());
   const { error } = await supabase.from("integrations").delete().eq("user_id", uid).eq("provider", provider);
-  if (error) throw error;
+  if (error) throw dbError(error);
 }
 
 /**
