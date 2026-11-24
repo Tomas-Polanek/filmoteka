@@ -138,10 +138,11 @@ def collect(jf, user_id, since):
 
 
 def send(config, token, items):
+    """Sends items in batches. With no items it still calls once, which checks the token and records the sync."""
     url = config["supabase_url"].rstrip("/") + "/rest/v1/rpc/integration_add_viewings"
     headers = {"apikey": config["supabase_publishable_key"]}
     added = 0
-    for i in range(0, len(items), BATCH):
+    for i in range(0, max(len(items), 1), BATCH):
         added += http_json(url, headers=headers, body={"p_token": token, "p_items": items[i : i + BATCH]})
     return added
 
@@ -164,7 +165,7 @@ def main():
             if args.dry_run:
                 print(json.dumps({"user": name, "items": items, "skipped": skipped}, ensure_ascii=False, indent=2))
                 continue
-            added = send(config, user["token"], items) if items else 0
+            added = send(config, user["token"], items)
             note = f", bez TMDB ID: {', '.join(skipped)}" if skipped else ""
             print(f"{dt.datetime.now():%Y-%m-%d %H:%M} {name}: {len(items)} zhlédnutí, nových {added}{note}")
         except Exception as e:  # keep syncing the other users
