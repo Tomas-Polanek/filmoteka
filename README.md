@@ -1,97 +1,97 @@
 # filmoteka
 
-Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Přihlašuje se uživatelským jménem a heslem. Každý uživatel má vlastní data (Supabase RLS), deník a „Chci vidět“ nevidí nikdo jiný, ani správce.
+Rodinná časová kapsle filmů a seriálů: zaznamenáš každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vidíš, kolikrát a naposledy jsi titul viděl. Přihlašuje se čistým uživatelským jménem a heslem (např. `tpolanek`). Každý uživatel má vlastní data (Supabase RLS), deník a „Chci vidět“ nevidí nikdo jiný, ani správce.
+
+Aplikace je postavená v **Next.js (React) jako iOS PWA** – v Safari na iPhonu ji přidáš na plochu (**Sdílet → Přidat na plochu**), běží na celou obrazovku s vlastní ikonou, nikdy nevyprší a nepotřebuje App Store ani Xcode.
 
 Struktura:
-- `supabase/` migrace databáze a test izolace dat (`npm install && npm test`), Edge Functions `tmdb` a `admin`
-- `ios/` SwiftUI aplikace (iOS 17+). Sestavuje se jen na Macu.
+- `src/` Next.js (App Router) PWA aplikace + serverové API routy (`/api/tmdb`, `/api/admin`, `/api/keepalive`)
+- `public/` PWA manifest a ikony aplikace (`icon.svg`, `icon.png`)
+- `supabase/` migrace databáze, testy izolace dat (`npm run test:db`) a Edge Functions `tmdb` a `admin`
+
+---
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (podle čísla: `0001_init.sql`, `0002_seasons.sql`, `0003_watchlist.sql`, `0004_family.sql`, `0005_remove_family_add_profiles.sql`, …) → Run. Při aktualizaci spusť jen nové migrace (např. `0005_remove_family_add_profiles.sql`: zruší Rodinu, přidá uživatelská jména a role, pak pokračuj krokem 5).
-2. Authentication → Sign In / Providers → Email: provider nech zapnutý, **„Confirm email“ vypni** a registraci („Allow new users to sign up“) nech povolenou. Aplikace se přihlašuje uživatelským jménem; e-mail `<jméno>@users.filmoteka.app` je jen interní, žádný e-mail se neposílá a v aplikaci se nikde neukazuje. Se zapnutým potvrzením by se nový účet nikdy nepřihlásil. Minimální délka hesla: 6 znaků (výchozí; aplikace i funkce `admin` vyžadují aspoň 6).
-3. Free projekt se po 7 dnech bez aktivity uspí. Obnovení je v dashboardu do jednoho roku.
-
-**Klíče:** do aplikace patří jen `sb_publishable_...` (publishable). Klíč `sb_secret_...` nikdy do aplikace ani do repozitáře. Pokud jsi ho někam vložil (třeba do chatu), vytvoř nový v Settings → API Keys, nahraď ho všude a starý smaž.
-
-## 2. TMDB
-
-1. Založ účet na themoviedb.org, v Settings → API vezmi **API Read Access Token (v4)**. Je to dlouhý JWT řetězec začínající `eyJ`, ne `sb_secret_`.
-2. Token drží Edge Function `tmdb` (`supabase/functions/tmdb`), aplikace volá TMDB jen přes ni a jen s přihlášeným uživatelem. Nasazení (Supabase CLI: `brew install supabase/tap/supabase`, `supabase login`):
-   ```
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0005_remove_family_add_profiles.sql`) → Run.
+2. Authentication → Sign In / Providers → Email: provider nech zapnutý, **„Confirm email“ vypni** a registraci nech povolenou. Aplikace se přihlašuje uživatelským jménem; interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje.
+3. Edge Functions `tmdb` a `admin`:
+   ```bash
    supabase secrets set TMDB_TOKEN=eyJ... --project-ref <ref>
    supabase functions deploy tmdb --no-verify-jwt --project-ref <ref>
+   supabase functions deploy admin --no-verify-jwt --project-ref <ref>
    ```
-   `--no-verify-jwt`: uživatele ověřuje funkce sama (gateway kontrola nepokrývá nové `sb_publishable_` klíče). Funkce propouští jen cesty a parametry, které aplikace používá. Test: `cd supabase/functions/tmdb && deno test --node-modules-dir=auto -A`.
-3. Pro komerční použití TMDB nelze; aplikace je jen pro rodinu.
+   *(Pokud nechceš nasazovat Edge Function `tmdb`, stačí nastavit `TMDB_TOKEN` přímo v proměnných prostředí Next.js aplikace – API route `/api/tmdb` ho použije automaticky jako fallback.)*
 
-## 3. iOS aplikace (na Macu)
+---
 
-1. `cp ios/Filmoteka/Config.swift.example ios/Filmoteka/Config.swift`. Soubor je v `.gitignore`. TMDB token do aplikace nepatří, drží ho Edge Function (krok 2).
-2. Vytvoř Xcode projekt: buď ručně (File → New → Project → iOS App „Filmoteka“, iOS 17+, přidej SPM balíček `https://github.com/supabase/supabase-swift`, produkt `Supabase`, a přetáhni soubory z `ios/Filmoteka/`), nebo přes XcodeGen:
+## 2. Lokální spuštění
+
+1. Zkopíruj `.env.example` do `.env.local` a vyplň URL a publishable klíč ze Supabase:
+   ```bash
+   cp .env.example .env.local
+   npm install
+   npm run dev
    ```
-   brew install xcodegen
-   cd ios && xcodegen
+2. Otevři `http://localhost:3000`.
+
+---
+
+## 3. Nasazení: Vercel (automatický deploy z GitHubu)
+
+1. Na [vercel.com](https://vercel.com) klikni na **Add New → Project** a vyber GitHub repozitář `Tomas-Polanek/filmoteka`.
+2. V sekci **Environment Variables** přidej:
+   - `NEXT_PUBLIC_SUPABASE_URL` = `https://<tvuj-project-ref>.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_...`
+   - `TMDB_TOKEN` = `eyJ...` *(volitelný fallback)*
+3. Klikni na **Deploy**.
+4. Soubor `vercel.json` automaticky nastaví Cron job (`/api/keepalive` každé 4 dny), aby se tvůj Supabase Free projekt po 7 dnech neuspal.
+
+---
+
+## 4. Nasazení: Raspberry Pi + Tailscale Funnel
+
+Pokud chceš aplikaci provozovat přímo na svém **Raspberry Pi** a zpřístupnit ji přes **Tailscale Funnel** (s automatickým HTTPS certifikátem):
+
+1. Na Raspberry Pi naklonuj repozitář, vytvoř `.env.local` a sestav aplikaci:
+   ```bash
+   git clone https://github.com/Tomas-Polanek/filmoteka.git
+   cd filmoteka
+   cp .env.example .env.local
+   nano .env.local   # vyplň NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, TMDB_TOKEN
+   npm install
+   npm run build
    ```
-   (v `project.yml` změň `bundleIdPrefix` na svůj.)
-3. Spusť na simulátoru nebo iPhonu.
-4. Účet je jen uživatelské jméno + heslo. Záložka „Nastavení“: změna hesla, motiv a barva, vlastní seznam míst („Kde“); správce tam navíc zakládá a maže účty, nastavuje hesla a role (Edge Function `admin`).
+2. Spusť aplikaci na portu `3000` (např. přes `pm2` nebo `systemd`):
+   ```bash
+   npm start
+   ```
+3. Zapni **Tailscale Funnel** na portu `3000` (poběží na pozadí s HTTPS):
+   ```bash
+   sudo tailscale funnel --bg 3000
+   ```
+   Tailscale ti vypíše veřejnou HTTPS adresu `https://<nazev-rpi>.<tvuj-tailnet>.ts.net`, kterou si na iPhonu otevřeš v Safari a dáš **Sdílet → Přidat na plochu**.
+   *(Pokud chceš, aby byla aplikace dostupná jen pro zařízení připojená do tvého Tailnetu a ne z veřejného internetu, použij místo `funnel` příkaz `sudo tailscale serve --bg 3000`.)*
 
-## 4. Instalace na iPhone
+---
 
-- Jen pro sebe: zdarma přes Apple ID. Podpis vyprší po 7 dnech, aplikaci pak znovu nainstaluješ z Xcode.
-- Pro rodinu: Apple Developer Program (99 USD/rok) a TestFlight. Build na TestFlightu platí 90 dní.
+## 5. Instalace na plochu iPhonu (PWA)
 
-## 5. Účty a role
+1. Otevři nasazenou HTTPS adresu (z Vercelu nebo Tailscale Funnelu) v **Safari** na iPhonu.
+2. Klepni dole na tlačítko **Sdílet** (čtvereček se šipkou nahoru) → **Přidat na plochu** (*Add to Home Screen*).
+3. Aplikace se přidá s ikonou Filmoteky a spouští se na celou obrazovku jako nativní iOS aplikace.
 
-Migrace `0005_remove_family_add_profiles.sql` přidává tabulku `public.profiles`: uživatelské jméno, role (`admin` nebo `user`) a vlastní seznam míst „Kde“ (`places`, `null` = výchozí seznam aplikace). Profil založí trigger `on_auth_user_created` při registraci podle jména z metadat (nebo z části interního e-mailu před `@`).
+---
 
-- Uživatelské jméno: 3–32 znaků, malá písmena bez diakritiky, číslice, `.`, `_`, `-`; začíná písmenem nebo číslicí. Je jedinečné a nemění se (odvozuje se z něj přihlašovací e-mail).
-- Registrace v aplikaci je otevřená, nový účet má roli `user`. Každý mění jen svoje heslo a svůj seznam míst; roli ani jméno si nezmění.
-- Správce (`admin`) v aplikaci zakládá a maže účty, nastavuje jim hesla a uděluje/odebírá roli správce. Sám sebe smazat nemůže a poslední správce musí zůstat. Cizí deníky nevidí.
-- Správu dělá Edge Function `admin` (`supabase/functions/admin`): ověří volajícího, zkontroluje jeho roli a změny provede se service role klíčem. `SUPABASE_URL` a `SUPABASE_SERVICE_ROLE_KEY` nastavuje Supabase funkcím sám, žádný secret navíc. Nasazení:
+## 6. Správa účtů a zapomenuté heslo
+
+- **První správce** (jednorázově v Supabase SQL Editoru):
+  ```sql
+  update public.profiles set role = 'admin' where username = 'tpolanek';
   ```
-  supabase functions deploy admin --no-verify-jwt --project-ref <ref>
+- **Zapomenuté heslo:** Uživateli nastaví nové heslo správce přímo v aplikaci (**Nastavení → Uživatelé → uživatel → Nastavit heslo**). Zapomene-li heslo poslední správce, nastaví si ho v Supabase SQL Editoru:
+  ```sql
+  update auth.users
+  set encrypted_password = extensions.crypt('nove-heslo', extensions.gen_salt('bf'))
+  where email = 'tpolanek@users.filmoteka.app';
   ```
-  `--no-verify-jwt` ze stejného důvodu jako u `tmdb`. Test: `cd supabase/functions/admin && deno test --node-modules-dir=auto -A`.
-
-**První správce** (jednorázově po registraci, SQL Editor):
-```sql
-update public.profiles set role = 'admin' where username = 'tvoje-jmeno';
-```
-
-**Účty založené před `0005`** (s opravdovým e-mailem): migrace jim dala jméno z metadat nebo z části e-mailu před `@` (obsazené nebo krátké dostane číslo, např. `tom1`). Zkontroluj je (`select username, role from public.profiles;`), případně přejmenuj (`update public.profiles set username = 'nove-jmeno' where username = 'tom1';`) a pak je jednorázově převeď na přihlašování jménem:
-```sql
-update auth.users u
-set email = p.username || '@users.filmoteka.app',
-    email_confirmed_at = coalesce(u.email_confirmed_at, now())
-from public.profiles p
-where p.user_id = u.id and u.email not like '%@users.filmoteka.app';
-
-update auth.identities i
-set identity_data = i.identity_data || jsonb_build_object('email', u.email)
-from auth.users u
-where i.user_id = u.id and i.provider = 'email' and u.email like '%@users.filmoteka.app';
-```
-Pak se přihlásí jménem a dosavadním heslem. Původní e-maily tím z projektu zmizí.
-
-**Zapomenuté heslo:** účty nemají e-mail, takže se heslo neposílá. Uživateli ho nastaví správce (Nastavení → Uživatelé → uživatel → Nastavit heslo). Zapomene-li heslo poslední správce, nastav ho v SQL Editoru (netestováno):
-```sql
-update auth.users set encrypted_password = extensions.crypt('nove-heslo', extensions.gen_salt('bf'))
-where email = 'tvoje-jmeno@users.filmoteka.app';
-```
-
-## 6. Verze a „Co je nového“
-
-Aplikace je v betě (verze `0.x.y`). Každá změna, kterou uživatel uvidí, dostane záznam v `CHANGELOG.md`:
-
-1. Nahoru do `CHANGELOG.md` přidej `## <verze> (<YYYY-MM-DD>)` a pod něj odrážky `- ` psané pro uživatele (co je jinak, ne jak je to naprogramované).
-2. V `ios/project.yml` nastav stejnou verzi do `MARKETING_VERSION` a zvyš `CURRENT_PROJECT_VERSION` (číslo buildu) o 1.
-3. `cd ios && xcodegen`. Build selže, pokud se verze v changelogu a v `project.yml` neshodují.
-
-Verze: oprava = `0.4.0 → 0.4.1`, nové funkce = `0.4.1 → 0.5.0`, první ostrá verze = `1.0.0`. Aplikace po aktualizaci jednou ukáže „Co je nového“ pro aktuální verzi; celá historie je v Nastavení → O aplikaci.
-
-## Known shortcuts
-
-- Měsíc bez dne se ukládá jako 1. den měsíce.
-- Seriály se ukládají po sezónách (volitelně), ne po epizodách. Sezóna 0 = speciály.

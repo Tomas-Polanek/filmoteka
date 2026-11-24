@@ -1,6 +1,21 @@
 # Co je nového
 
-Formát (aplikace ho čte, drž ho přesně): `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře a musí se shodovat s `MARKETING_VERSION` v `ios/project.yml`, jinak build selže.
+Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
+
+## 0.5.2 (2026-11-24)
+- Filmové ambientní pozadí a Liquid Glass vzhled karet, panelů i vlastních posuvníků.
+- Vyhledávání podle jména herce nebo režiséra (při přidávání titulu z TMDB i přímo v Deníku).
+- Okamžité načítání detailů filmů díky serverové a klientské mezipaměti a přednačítání při najetí myší na plakát.
+
+## 0.5.1 (2026-11-24)
+- Responzivní vzhled pro PC i mobil: levý postranní panel (Sidebar) na počítači a plovoucí spodní lišta na telefonu.
+- Mřížka velkých plakátů s odznaky hodnocení a počtu zhlédnutí + přepínač Mřížka / Seznam.
+- Široký detail titulu s karuselem „Herci a obsazení“ ve stylu Jellyfinu a dvousloupcový Kalendář.
+
+## 0.5.0 (2026-11-24)
+- Nová webová a PWA aplikace (Next.js + React) pro iPhone, iPad, Android i počítač (nahrazuje původní Xcode projekt).
+- Přidej si Filmoteku v Safari na plochu iPhonu – funguje bez App Storu a bez 7denního vypršení.
+- Automatický keep-alive Cron na Vercelu proti 7dennímu uspání Supabase a podpora pro Tailscale Funnel na Raspberry Pi.
 
 ## 0.4.1 (2026-11-24)
 - Na přihlášení je „Zapomenuté heslo?“ s návodem: správce ti nastaví nové heslo.
@@ -23,7 +38,7 @@ Formát (aplikace ho čte, drž ho přesně): `## <verze> (<YYYY-MM-DD>)`, pod n
 - Řazení deníku podle data, hodnocení, názvu, počtu zhlédnutí nebo roku.
 - U seriálů jde uložit konkrétní sezónu.
 - Nová záložka Kalendář s měsíčním přehledem a časovou osou.
-- Nová záložka Chci vidět. Swipem „Viděno“ se titul přesune do deníku.
+- Nová záložka Chci vidět. Akcí „Viděno“ se titul přesune do deníku.
 - Vyhledávání filmů běží přes server, klíč k databázi filmů už není v aplikaci.
 
 ## 0.2.0 (2026-11-22)

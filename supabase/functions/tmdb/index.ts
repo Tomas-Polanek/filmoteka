@@ -9,6 +9,7 @@ const ALLOWED_PATHS = [
   /^3\/search\/multi$/,
   /^3\/(movie|tv)\/\d+$/,
   /^3\/tv\/\d+\/season\/\d+$/,
+  /^3\/person\/\d+\/combined_credits$/,
 ];
 const ALLOWED_PARAMS: Record<string, true> = {
   query: true,
