@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="public/icon.svg" alt="Filmoteka" width="96" />
+<img src="public/icon.svg" alt="Filmotéka" width="96" />
 
-# Filmoteka
+# Filmotéka
 
-**Rodinná časová kapsle filmů a seriálů.**
-Zaznamenej každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vždycky uvidíš, kolikrát a kdy naposledy jsi titul viděl.
+**Tvůj osobní deník filmů a seriálů.**
+Zaznamenej, co jsi viděl, kdy, kde a jak se ti to líbilo. Vždycky uvidíš, kolikrát a kdy naposledy jsi titul viděl.
 
 [**filmoteka-denik.vercel.app**](https://filmoteka-denik.vercel.app) · Next.js PWA · Supabase · TMDB
 
@@ -14,11 +14,13 @@ Zaznamenej každé zhlédnutí (kdy, kde, hodnocení, poznámka) a vždycky uvid
 ![Deník na počítači](docs/screenshots/desktop-denik.webp)
 
 <p align="center">
-  <img src="docs/screenshots/mobile-denik.webp" alt="Deník na telefonu" width="260" />
-  &nbsp;
-  <img src="docs/screenshots/mobile-detail.webp" alt="Detail filmu na telefonu" width="260" />
-  &nbsp;
-  <img src="docs/screenshots/mobile-pridat.webp" alt="Přidání zhlédnutí s kalendářem" width="260" />
+  <img src="docs/screenshots/iphone-denik.webp" alt="Deník na iPhonu" width="250" />
+  <img src="docs/screenshots/iphone-detail.webp" alt="Detail filmu na iPhonu" width="250" />
+  <img src="docs/screenshots/iphone-pridat.webp" alt="Přidání zhlédnutí s kalendářem na iPhonu" width="250" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/iphone-kalendar.webp" alt="Kalendář na iPhonu" width="250" />
+  <img src="docs/screenshots/iphone-chci-videt.webp" alt="Chci vidět na iPhonu" width="250" />
 </p>
 
 ## Co umí
@@ -132,7 +134,7 @@ Pak otevři `http://localhost:3000`.
 
 1. Otevři adresu aplikace v **Safari**.
 2. **Sdílet** (čtvereček se šipkou) → **Přidat na plochu**.
-3. Filmoteka se spouští na celou obrazovku s vlastní ikonou jako nativní aplikace.
+3. Filmotéka se spouští na celou obrazovku s vlastní ikonou jako nativní aplikace.
 
 ---
 
