@@ -2,6 +2,9 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.6 (2026-11-24)
+- Aplikace se jmenuje Filmotéka a má nový popis: Tvůj osobní deník filmů a seriálů.
+
 ## 0.5.5 (2026-11-24)
 - Na telefonu už spodní lišta nepřekrývá okno se zhlédnutím, takže je vidět i pole Poznámka.
 - Detail filmu se na telefonu otevře nahoře a tlačítko Zpět vrátí deník na místo, kde jste skončili.

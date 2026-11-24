@@ -1,7 +1,7 @@
 {
-  "name": "Filmoteka",
-  "short_name": "Filmoteka",
-  "description": "Rodinná časová kapsle filmů a seriálů",
+  "name": "Filmotéka",
+  "short_name": "Filmotéka",
+  "description": "Tvůj osobní deník filmů a seriálů",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1b3d",

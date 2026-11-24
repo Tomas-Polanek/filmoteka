@@ -4,11 +4,16 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.5.5";
-export const BUILD_NUMBER = "12";
+export const APP_VERSION = "0.5.6";
+export const BUILD_NUMBER = "13";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.5.6",
+    date: "2026-11-24",
+    items: ["Aplikace se jmenuje Filmotéka a má nový popis: Tvůj osobní deník filmů a seriálů."],
+  },
   {
     version: "0.5.5",
     date: "2026-11-24",

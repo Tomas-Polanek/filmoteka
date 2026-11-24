@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Filmoteka",
-  description: "Rodinná časová kapsle filmů a seriálů",
+  title: "Filmotéka",
+  description: "Tvůj osobní deník filmů a seriálů",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Filmoteka",
+    title: "Filmotéka",
   },
   icons: {
     icon: "/icon.svg",

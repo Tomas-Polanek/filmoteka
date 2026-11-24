@@ -151,9 +151,9 @@ export default function HomePage() {
       <aside className="desktop-sidebar">
         <div className="sidebar-brand" onClick={() => setTab("diary")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="Filmoteka" className="sidebar-logo" />
+          <img src="/icon.svg" alt="Filmotéka" className="sidebar-logo" />
           <div>
-            <div className="sidebar-title">Filmoteka</div>
+            <div className="sidebar-title">Filmotéka</div>
             <div className="sidebar-version">
               v{APP_VERSION} {IS_BETA && <span className="beta-badge-sm">BETA</span>}
             </div>
