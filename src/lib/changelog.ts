@@ -4,11 +4,16 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.5.7";
-export const BUILD_NUMBER = "14";
+export const APP_VERSION = "0.5.8";
+export const BUILD_NUMBER = "15";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.5.8",
+    date: "2026-11-25",
+    items: ["Nápověda u uživatelského jména na přihlášení ukazuje obecný příklad („bohumil“)."],
+  },
   {
     version: "0.5.7",
     date: "2026-11-25",

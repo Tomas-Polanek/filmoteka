@@ -67,7 +67,7 @@ export function AuthView() {
               <User size={18} className="auth-field-icon" />
               <input
                 type="text"
-                placeholder="např. tpolanek"
+                placeholder="např. bohumil"
                 autoCapitalize="none"
                 autoCorrect="off"
                 autoComplete="username"

@@ -2,6 +2,9 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.8 (2026-11-25)
+- Nápověda u uživatelského jména na přihlášení ukazuje obecný příklad („bohumil“).
+
 ## 0.5.7 (2026-11-25)
 - Ikona aplikace má zaoblený tvar jako ikony na iPhonu.
 - V Nastavení je odkaz na zdrojový kód na GitHubu.

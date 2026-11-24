@@ -67,7 +67,7 @@ Struktura:
 - `supabase/` migrace databáze, testy izolace dat (`npm run test:db`) a Edge Functions
 - `docs/screenshots/` obrázky do tohoto README (demo účet s ukázkovými daty)
 
-Účty nemají e-mail: přihlašuje se uživatelským jménem a heslem (např. `tpolanek`). Interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje. **Veřejná registrace není**, účty zakládá správce v **Nastavení → Uživatelé**.
+Účty nemají e-mail: přihlašuje se uživatelským jménem a heslem (např. `bohumil`). Interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje. **Veřejná registrace není**, účty zakládá správce v **Nastavení → Uživatelé**.
 
 ---
 
@@ -142,14 +142,14 @@ Pak otevři `http://localhost:3000`.
 
 - **První správce** (jednorázově v Supabase SQL Editoru):
   ```sql
-  update public.profiles set role = 'admin' where username = 'tpolanek';
+  update public.profiles set role = 'admin' where username = 'bohumil';
   ```
 - **Další účty** zakládá správce v **Nastavení → Uživatelé**.
 - **Zapomenuté heslo:** nové heslo nastaví správce v **Nastavení → Uživatelé → uživatel → Nastavit heslo**. Když ho zapomene poslední správce, nastaví si ho v SQL Editoru:
   ```sql
   update auth.users
   set encrypted_password = extensions.crypt('nove-heslo', extensions.gen_salt('bf'))
-  where email = 'tpolanek@users.filmoteka.app';
+  where email = 'bohumil@users.filmoteka.app';
   ```
 
 ---
