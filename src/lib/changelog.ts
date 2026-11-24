@@ -4,11 +4,16 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.5.8";
-export const BUILD_NUMBER = "15";
+export const APP_VERSION = "0.5.9";
+export const BUILD_NUMBER = "16";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.5.9",
+    date: "2026-11-25",
+    items: ["Kalendář má viditelnou mřížku: každý den je samostatné políčko."],
+  },
   {
     version: "0.5.8",
     date: "2026-11-25",

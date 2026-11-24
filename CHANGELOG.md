@@ -2,6 +2,9 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.9 (2026-11-25)
+- Kalendář má viditelnou mřížku: každý den je samostatné políčko.
+
 ## 0.5.8 (2026-11-25)
 - Nápověda u uživatelského jména na přihlášení ukazuje obecný příklad („bohumil“).
 

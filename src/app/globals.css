@@ -1880,8 +1880,8 @@ a.ios-button-row {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
 }
 
 .calendar-weekday {
@@ -1892,11 +1892,12 @@ a.ios-button-row {
   padding-bottom: 6px;
 }
 
+/* Each day is a faint tile, so the month reads as a grid */
 .calendar-cell {
   height: 82px;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  background: color-mix(in srgb, var(--text-secondary) 6%, transparent);
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1907,10 +1908,12 @@ a.ios-button-row {
 
 .calendar-cell:hover:not(.empty) {
   background: var(--glass-bg-subtle);
-  border-color: var(--glass-border);
+  border-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
 }
 
 .calendar-cell.empty {
+  border-color: transparent;
+  background: transparent;
   cursor: default;
 }
 
