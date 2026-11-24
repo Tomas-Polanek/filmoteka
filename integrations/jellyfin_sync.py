@@ -5,7 +5,6 @@ Runs on the machine with Jellyfin (e.g. every 15 minutes from cron). For every c
 the movies and episodes marked as played since `since`, maps them to TMDB ids and calls the Supabase function
 `integration_add_viewings` with that user's Filmotéka token. Filmotéka skips plays it already has, so running
 the script often (or twice) is harmless.
-
 A movie becomes one viewing per day it was last played; episodes become one viewing per series, season and day.
 Only the standard library is used.
 
@@ -15,6 +14,7 @@ Usage: jellyfin_sync.py [--config PATH] [--dry-run]
 import argparse
 import datetime as dt
 import json
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -153,7 +153,14 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="print what would be sent, send nothing")
     args = parser.parse_args()
 
-    config = json.loads(args.config.read_text(encoding="utf-8"))
+    # The config is edited by hand: forgive a comma before ] or }, and say where anything else is wrong.
+    text = re.sub(r",(\s*[\]}])", r"\1", args.config.read_text(encoding="utf-8"))
+    try:
+        config = json.loads(text)
+    except json.JSONDecodeError as e:
+        print(f"Chyba v {args.config}, řádek {e.lineno}, sloupec {e.colno}: {e.msg} "
+              "(zkontroluj čárky mezi uživateli a uvozovky)", file=sys.stderr)
+        return 2
     since = dt.date.fromisoformat(config["since"])
     jf = Jellyfin(config["jellyfin_url"], config["jellyfin_api_key"])
 
