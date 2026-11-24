@@ -1,8 +1,0 @@
-// Copy this file to Config.swift (same folder, gitignored).
-// The TMDB token is not here: it lives in the `tmdb` Supabase Edge Function secret TMDB_TOKEN.
-import Foundation
-
-enum Config {
-    static let supabaseURL = URL(string: "https://ftunhntfrpyoxxuieisz.supabase.co")!
-    static let supabaseKey = "sb_publishable_J0oJsHQyukk2mBkz6onCSQ_Xx-ADK-a"
-}

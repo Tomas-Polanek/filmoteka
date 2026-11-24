@@ -1,10 +1,10 @@
 node_modules/
+.next/
+out/
 .env*
 !.env.example
-
-# iOS secrets (copy ios/Filmoteka/Config.swift.example to Config.swift)
-ios/Filmoteka/Config.swift
-ios/Filmoteka.xcodeproj/
+next-env.d.ts
+*.tsbuildinfo
 
 # Supabase CLI cache
 supabase/.temp/
