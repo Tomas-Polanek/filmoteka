@@ -4,11 +4,20 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.5.4";
-export const BUILD_NUMBER = "11";
+export const APP_VERSION = "0.5.5";
+export const BUILD_NUMBER = "12";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.5.5",
+    date: "2026-11-24",
+    items: [
+      "Na telefonu už spodní lišta nepřekrývá okno se zhlédnutím, takže je vidět i pole Poznámka.",
+      "Detail filmu se na telefonu otevře nahoře a tlačítko Zpět vrátí deník na místo, kde jste skončili.",
+      "Všechny rozbalovací nabídky (Kde, řazení, rok, měsíc, motiv) mají vlastní vzhled aplikace místo systémového seznamu.",
+    ],
+  },
   {
     version: "0.5.4",
     date: "2026-11-24",

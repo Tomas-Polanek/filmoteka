@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpDown,
   ChevronRight,
@@ -20,6 +20,7 @@ import {
   prefetchTMDBDetail,
 } from "@/lib/tmdb";
 import { Poster } from "./Poster";
+import { Select } from "./Select";
 import { AddViewingModal } from "./AddViewingModal";
 import { TitleDetailView } from "./TitleDetailView";
 
@@ -47,6 +48,16 @@ export function TitlesView({ places }: { places: string[] }) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [adding, setAdding] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState<TitleSummary | null>(null);
+  // The list and the detail share the window scroll: the detail starts at the top,
+  // and going back returns to where the list was.
+  const listScrollY = useRef(0);
+  useEffect(() => {
+    window.scrollTo(0, selectedTitle ? 0 : listScrollY.current);
+  }, [selectedTitle]);
+  const openTitle = (t: TitleSummary) => {
+    listScrollY.current = window.scrollY;
+    setSelectedTitle(t);
+  };
   const [creditsIndex, setCreditsIndex] = useState<Record<string, string>>({});
 
   // Na pozadí zaindexuje herce, postavy a režiséry zhlédnutých titulů pro okamžité vyhledávání v Deníku
@@ -242,18 +253,13 @@ export function TitlesView({ places }: { places: string[] }) {
 
           <div className="sort-select-wrap" title="Řadit podle">
             <ArrowUpDown size={15} className="accent-text" />
-            <select
+            <Select<SortType>
               className="toolbar-select"
               value={sort}
-              onChange={(e) => changeSort(e.target.value as SortType)}
-              aria-label="Řadit podle"
-            >
-              {SORT_LABELS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+              options={SORT_LABELS.map((s) => ({ value: s.id, label: s.label }))}
+              onChange={changeSort}
+              ariaLabel="Řadit podle"
+            />
           </div>
 
           <button
@@ -333,7 +339,7 @@ export function TitlesView({ places }: { places: string[] }) {
                 type="button"
                 className="poster-card"
                 onMouseEnter={() => prefetchTMDBDetail(t.media_type, t.tmdb_id)}
-                onClick={() => setSelectedTitle(t)}
+                onClick={() => openTitle(t)}
               >
                 <div className="poster-card-artwork">
                   {imgUrl ? (
@@ -374,7 +380,7 @@ export function TitlesView({ places }: { places: string[] }) {
                 key={`${t.media_type}-${t.tmdb_id}`}
                 type="button"
                 className="ios-row ios-button-row media-row"
-                onClick={() => setSelectedTitle(t)}
+                onClick={() => openTitle(t)}
               >
                 <Poster path={t.poster_path} size="w154" width={48} />
                 <div className="media-info">

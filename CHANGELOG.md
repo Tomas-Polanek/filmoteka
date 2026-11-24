@@ -2,6 +2,11 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.5 (2026-11-24)
+- Na telefonu už spodní lišta nepřekrývá okno se zhlédnutím, takže je vidět i pole Poznámka.
+- Detail filmu se na telefonu otevře nahoře a tlačítko Zpět vrátí deník na místo, kde jste skončili.
+- Všechny rozbalovací nabídky (Kde, řazení, rok, měsíc, motiv) mají vlastní vzhled aplikace místo systémového seznamu.
+
 ## 0.5.4 (2026-11-24)
 - Tlačítko Upravit v detailu filmu nebo seriálu hned vedle Přidat zhlédnutí (upraví poslední zhlédnutí).
 - Kulatá zaškrtávací políčka ve stylu aplikace.

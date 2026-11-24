@@ -27,6 +27,7 @@ import {
 import { ACCENTS, AccentOption, formatDayCzech, ThemeOption } from "@/lib/models";
 import { AdminAPI, AdminUser } from "@/lib/admin";
 import { APP_VERSION, BUILD_NUMBER, IS_BETA, RELEASES } from "@/lib/changelog";
+import { Select } from "./Select";
 
 type SubScreen =
   | { type: "root" }
@@ -185,15 +186,15 @@ export function SettingsView({
         <div className="ios-card">
           <div className="ios-row space-between">
             <span>Motiv</span>
-            <select
-              className="ios-select"
+            <Select<ThemeOption>
               value={theme}
-              onChange={(e) => onChangeTheme(e.target.value as ThemeOption)}
-            >
-              <option value="system">Podle systému</option>
-              <option value="light">Světlý</option>
-              <option value="dark">Tmavý</option>
-            </select>
+              options={[
+                { value: "system", label: "Podle systému" },
+                { value: "light", label: "Světlý" },
+                { value: "dark", label: "Tmavý" },
+              ]}
+              onChange={onChangeTheme}
+            />
           </div>
           <div className="ios-row space-between">
             <span>Barva</span>

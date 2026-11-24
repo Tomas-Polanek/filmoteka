@@ -16,6 +16,7 @@ import {
 } from "@/lib/models";
 import { DatePicker } from "./DatePicker";
 import { Poster } from "./Poster";
+import { Select } from "./Select";
 import { TMDBSearchList } from "./TMDBSearchList";
 
 type Precision = "day" | "month" | "year";
@@ -257,34 +258,25 @@ export function AddViewingModal({
                   {(precision === "month" || precision === "year") && (
                     <div className="ios-row space-between">
                       <span>Rok</span>
-                      <select
-                        className="ios-select"
+                      <Select
                         value={selectedYear}
-                        onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      >
-                        {years.map((y) => (
-                          <option key={y} value={y}>
-                            {y}
-                          </option>
-                        ))}
-                      </select>
+                        options={years.map((y) => ({ value: y, label: String(y) }))}
+                        onChange={setSelectedYear}
+                      />
                     </div>
                   )}
 
                   {precision === "month" && (
                     <div className="ios-row space-between">
                       <span>Měsíc</span>
-                      <select
-                        className="ios-select"
+                      <Select
                         value={Math.min(selectedMonth, maxMonth)}
-                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                      >
-                        {CZECH_MONTHS_STANDALONE.slice(0, maxMonth).map((mName, idx) => (
-                          <option key={idx + 1} value={idx + 1}>
-                            {mName}
-                          </option>
-                        ))}
-                      </select>
+                        options={CZECH_MONTHS_STANDALONE.slice(0, maxMonth).map((mName, idx) => ({
+                          value: idx + 1,
+                          label: mName,
+                        }))}
+                        onChange={setSelectedMonth}
+                      />
                     </div>
                   )}
 
@@ -342,17 +334,11 @@ export function AddViewingModal({
                 <div className="ios-card">
                   <div className="ios-row space-between">
                     <span>Kde</span>
-                    <select
-                      className="ios-select"
+                    <Select
                       value={place}
-                      onChange={(e) => setPlace(e.target.value)}
-                    >
-                      {placeOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
+                      options={placeOptions.map((opt) => ({ value: opt, label: opt }))}
+                      onChange={setPlace}
+                    />
                   </div>
                   {place === OTHER_PLACE && (
                     <div className="ios-row">
