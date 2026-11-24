@@ -14,7 +14,7 @@ export function AuthView() {
 
   const canSubmit = username.trim().length > 0 && password.length > 0 && !busy;
 
-  // Accounts are created only by an admin (Settings → Účty); there is no public sign-up.
+  // Accounts are created only by an admin (Settings → Uživatelé); there is no public sign-up.
   async function submit() {
     setError(null);
     const name = normalizeUsername(username);

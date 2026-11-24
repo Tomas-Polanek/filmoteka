@@ -1116,11 +1116,52 @@ textarea {
   color: #fff;
 }
 
+/* Round checkbox in the app's style */
 .ios-switch {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--accent);
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--text-secondary) 55%, transparent);
+  background: var(--glass-bg-subtle);
+  box-shadow: var(--glass-highlight);
+  display: inline-grid;
+  place-content: center;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ios-switch::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: translateY(-1px) rotate(45deg) scale(0);
+  transition: transform 0.15s;
+}
+
+.ios-switch:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ios-switch:checked::after {
+  transform: translateY(-1px) rotate(45deg) scale(1);
+}
+
+.ios-switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .stepper {

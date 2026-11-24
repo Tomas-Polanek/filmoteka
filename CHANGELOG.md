@@ -2,8 +2,12 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.4 (2026-11-24)
+- Tlačítko Upravit v detailu filmu nebo seriálu hned vedle Přidat zhlédnutí (upraví poslední zhlédnutí).
+- Kulatá zaškrtávací políčka ve stylu aplikace.
+
 ## 0.5.3 (2026-11-24)
-- Registrace je vypnutá: nové účty zakládá jen správce v Nastavení → Účty.
+- Registrace je vypnutá: nové účty zakládá jen správce v Nastavení → Uživatelé.
 - Detail titulu je přizpůsobený telefonu: kratší tlačítka v horní liště, menší plakát a název, který se nepřekrývá s obrázkem.
 - Mezipaměť filmů na serveru vrací data jen přihlášeným a nemůže neomezeně růst.
 - Výběr data zhlédnutí má vlastní kalendář ve stylu aplikace místo strohého systémového okna.

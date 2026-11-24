@@ -192,15 +192,29 @@ export function TitleDetailView({
           <span className="label-narrow">Zpět</span>
         </button>
         <div className="nav-inline-title">{title.title}</div>
-        <button
-          type="button"
-          className="primary-action-btn compact"
-          onClick={() => setModalMode({ open: true, editing: null })}
-        >
-          <Plus size={17} />
-          <span className="label-wide">Přidat zhlédnutí</span>
-          <span className="label-narrow">Přidat</span>
-        </button>
+        <div className="nav-actions">
+          {viewings.length > 0 && (
+            <button
+              type="button"
+              className="nav-action-btn"
+              title="Upravit poslední zhlédnutí"
+              aria-label="Upravit poslední zhlédnutí"
+              onClick={() => setModalMode({ open: true, editing: viewings[0] })}
+            >
+              <Pencil size={16} />
+              <span className="label-wide">Upravit</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="primary-action-btn compact"
+            onClick={() => setModalMode({ open: true, editing: null })}
+          >
+            <Plus size={17} />
+            <span className="label-wide">Přidat zhlédnutí</span>
+            <span className="label-narrow">Přidat</span>
+          </button>
+        </div>
       </div>
 
       <div className="detail-hero-card">
