@@ -2,6 +2,13 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.3 (2026-11-24)
+- Registrace je vypnutá: nové účty zakládá jen správce v Nastavení → Účty.
+- Detail titulu je přizpůsobený telefonu: kratší tlačítka v horní liště, menší plakát a název, který se nepřekrývá s obrázkem.
+- Mezipaměť filmů na serveru vrací data jen přihlášeným a nemůže neomezeně růst.
+- Výběr data zhlédnutí má vlastní kalendář ve stylu aplikace místo strohého systémového okna.
+- U každého zhlédnutí je tlačítko s tužkou pro úpravu.
+
 ## 0.5.2 (2026-11-24)
 - Filmové ambientní pozadí a Liquid Glass vzhled karet, panelů i vlastních posuvníků.
 - Vyhledávání podle jména herce nebo režiséra (při přidávání titulu z TMDB i přímo v Deníku).

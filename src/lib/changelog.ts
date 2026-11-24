@@ -4,11 +4,22 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.5.2";
-export const BUILD_NUMBER = "9";
+export const APP_VERSION = "0.5.3";
+export const BUILD_NUMBER = "10";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.5.3",
+    date: "2026-11-24",
+    items: [
+      "Registrace je vypnutá: nové účty zakládá jen správce v Nastavení → Účty.",
+      "Detail titulu je přizpůsobený telefonu: kratší tlačítka v horní liště, menší plakát a název, který se nepřekrývá s obrázkem.",
+      "Mezipaměť filmů na serveru vrací data jen přihlášeným a nemůže neomezeně růst.",
+      "Výběr data zhlédnutí má vlastní kalendář ve stylu aplikace místo strohého systémového okna.",
+      "U každého zhlédnutí je tlačítko s tužkou pro úpravu.",
+    ],
+  },
   {
     version: "0.5.2",
     date: "2026-11-24",

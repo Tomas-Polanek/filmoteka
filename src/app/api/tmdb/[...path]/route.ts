@@ -18,17 +18,59 @@ const ALLOWED_PARAMS = new Set([
 ]);
 
 const CACHE_TTL_MS = 30 * 60 * 1000;
+const CACHE_MAX_ENTRIES = 500;
+const TOKEN_TTL_MS = 5 * 60 * 1000;
+const TOKEN_MAX_ENTRIES = 200;
+// Responses need a signed-in user, so shared caches (CDN) must not store them.
+const CACHE_HEADERS = { "Cache-Control": "private, max-age=3600" };
+
+type Entry<T> = { expires: number; value: T };
 
 declare global {
   // eslint-disable-next-line no-var
-  var __filmotekaTmdbCache: Map<string, { expires: number; data: unknown }> | undefined;
+  var __filmotekaTmdbCache: Map<string, Entry<unknown>> | undefined;
+  // eslint-disable-next-line no-var
+  var __filmotekaTokenCache: Map<string, Entry<true>> | undefined;
 }
 
-function getServerCache() {
-  if (!globalThis.__filmotekaTmdbCache) {
-    globalThis.__filmotekaTmdbCache = new Map();
+const responseCache = (globalThis.__filmotekaTmdbCache ??= new Map());
+const tokenCache = (globalThis.__filmotekaTokenCache ??= new Map());
+
+function lookup<T>(cache: Map<string, Entry<T>>, key: string): T | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expires > Date.now()) return entry.value;
+  cache.delete(key);
+  return undefined;
+}
+
+/** Stores the value; drops expired entries, then the oldest ones, so the map never exceeds `max`. */
+function remember<T>(cache: Map<string, Entry<T>>, key: string, value: T, ttl: number, max: number) {
+  const now = Date.now();
+  cache.delete(key);
+  if (cache.size >= max) {
+    for (const [k, e] of cache) if (e.expires <= now) cache.delete(k);
+    for (const k of cache.keys()) {
+      if (cache.size < max) break;
+      cache.delete(k);
+    }
   }
-  return globalThis.__filmotekaTmdbCache;
+  cache.set(key, { expires: now + ttl, value });
+}
+
+/** True when Supabase Auth accepts the bearer token (cached briefly so cache hits stay fast). */
+async function isSignedIn(authHeader: string): Promise<boolean> {
+  if (lookup(tokenCache, authHeader)) return true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { Authorization: authHeader, apikey: SUPABASE_KEY },
+    });
+    if (!res.ok) return false;
+  } catch {
+    return false;
+  }
+  remember(tokenCache, authHeader, true, TOKEN_TTL_MS, TOKEN_MAX_ENTRIES);
+  return true;
 }
 
 export async function GET(
@@ -54,14 +96,12 @@ export async function GET(
   }
 
   const cacheKey = `${joinedPath}?${searchParams.toString()}`;
-  const serverCache = getServerCache();
-  const cached = serverCache.get(cacheKey);
-  if (cached && cached.expires > Date.now()) {
-    return NextResponse.json(cached.data, {
-      headers: {
-        "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-      },
-    });
+  const cached = lookup(responseCache, cacheKey);
+  if (cached !== undefined) {
+    if (!(await isSignedIn(authHeader))) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json(cached, { headers: CACHE_HEADERS });
   }
 
   // Volání přes Supabase Edge Function `tmdb` (kde je platný TMDB_TOKEN secret)
@@ -76,12 +116,10 @@ export async function GET(
     });
     const data = await edgeRes.json().catch(() => ({}));
     if (edgeRes.ok) {
-      serverCache.set(cacheKey, { expires: Date.now() + CACHE_TTL_MS, data });
-      return NextResponse.json(data, {
-        headers: {
-          "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-        },
-      });
+      // The edge function verified the token, so later cache hits can skip that check for a while.
+      remember(tokenCache, authHeader, true, TOKEN_TTL_MS, TOKEN_MAX_ENTRIES);
+      remember(responseCache, cacheKey, data, CACHE_TTL_MS, CACHE_MAX_ENTRIES);
+      return NextResponse.json(data, { headers: CACHE_HEADERS });
     }
     return NextResponse.json(data, { status: edgeRes.status });
   } catch {

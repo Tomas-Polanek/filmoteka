@@ -14,7 +14,8 @@ Struktura:
 ## 1. Databáze (Supabase)
 
 1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0005_remove_family_add_profiles.sql`) → Run.
-2. Authentication → Sign In / Providers → Email: provider nech zapnutý, **„Confirm email“ vypni** a registraci nech povolenou. Aplikace se přihlašuje uživatelským jménem; interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje.
+2. Authentication → Sign In / Providers → Email: provider nech zapnutý a **„Confirm email“ vypni**. Aplikace se přihlašuje uživatelským jménem; interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje.
+   Pak v Authentication → Sign In / Providers **vypni „Allow new users to sign up“**. Veřejná registrace v aplikaci není a bez tohoto přepínače by si účet mohl založit kdokoli přímo přes API. Další účty zakládá správce v Nastavení → Účty (funkce `admin` používá service role, na kterou vypnutá registrace nemá vliv).
 3. Edge Functions `tmdb` a `admin`:
    ```bash
    supabase secrets set TMDB_TOKEN=eyJ... --project-ref <ref>

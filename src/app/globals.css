@@ -2061,3 +2061,138 @@ textarea {
     transform: rotate(360deg);
   }
 }
+
+/* Edit action next to each viewing */
+.icon-subtle-btn.edit-btn {
+  color: var(--accent);
+}
+
+/* Date picker in the app's style (replaces the unthemeable native date popup) */
+.date-picker-value {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  box-shadow: var(--glass-highlight);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.date-picker-value.open {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.date-picker-panel {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.date-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-picker-month {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+
+.date-picker-weekday {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-bottom: 2px;
+}
+
+.date-picker-day {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  aspect-ratio: 1;
+  max-height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.date-picker-day:hover:not(:disabled) {
+  background: var(--glass-bg-subtle);
+}
+
+.date-picker-day.today {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.date-picker-day.selected {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.date-picker-day:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Phone layout of the title detail (kept last so it overrides the base rules above) */
+.label-narrow {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .label-wide {
+    display: none;
+  }
+  .label-narrow {
+    display: inline;
+  }
+  .top-navbar {
+    gap: 10px;
+  }
+  .nav-inline-title {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    text-align: center;
+    font-size: 16px;
+  }
+  .detail-backdrop {
+    aspect-ratio: 16 / 10;
+  }
+  .detail-hero-body {
+    padding: 0 16px 18px;
+  }
+  .detail-hero-content {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: -56px;
+  }
+  /* Poster sets its size inline; the phone needs a smaller one */
+  .detail-poster {
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 144px !important;
+  }
+  .detail-title-block {
+    min-width: 0;
+    padding-top: 60px;
+  }
+  .detail-main-title {
+    font-size: 22px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+}

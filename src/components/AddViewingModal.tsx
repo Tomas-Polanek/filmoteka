@@ -14,6 +14,7 @@ import {
   Viewing,
   ViewingUpdate,
 } from "@/lib/models";
+import { DatePicker } from "./DatePicker";
 import { Poster } from "./Poster";
 import { TMDBSearchList } from "./TMDBSearchList";
 
@@ -245,16 +246,12 @@ export function AddViewingModal({
                   </div>
 
                   {precision === "day" && (
-                    <div className="ios-row space-between">
-                      <span>Datum</span>
-                      <input
-                        type="date"
-                        className="ios-select"
-                        max={todayIsoString()}
-                        value={dateStr}
-                        onChange={(e) => setDateStr(e.target.value)}
-                      />
-                    </div>
+                    <DatePicker
+                      label="Datum"
+                      value={dateStr}
+                      max={todayIsoString()}
+                      onChange={setDateStr}
+                    />
                   )}
 
                   {(precision === "month" || precision === "year") && (

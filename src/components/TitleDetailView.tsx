@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  Pencil,
   Play,
   Plus,
   Trash2,
@@ -187,7 +188,8 @@ export function TitleDetailView({
       <div className="top-navbar">
         <button type="button" className="nav-back-btn" onClick={onBack}>
           <ChevronLeft size={22} />
-          <span>Zpět do deníku</span>
+          <span className="label-wide">Zpět do deníku</span>
+          <span className="label-narrow">Zpět</span>
         </button>
         <div className="nav-inline-title">{title.title}</div>
         <button
@@ -196,7 +198,8 @@ export function TitleDetailView({
           onClick={() => setModalMode({ open: true, editing: null })}
         >
           <Plus size={17} />
-          <span>Přidat zhlédnutí</span>
+          <span className="label-wide">Přidat zhlédnutí</span>
+          <span className="label-narrow">Přidat</span>
         </button>
       </div>
 
@@ -215,7 +218,7 @@ export function TitleDetailView({
         <div className="detail-hero-body">
           <div className="detail-hero-content">
             <div className="detail-poster-wrap">
-              <Poster path={title.poster_path} size="w342" width={124} />
+              <Poster path={title.poster_path} size="w342" width={124} className="detail-poster" />
             </div>
             <div className="detail-title-block">
               <h1 className="detail-main-title">{title.title}</h1>
@@ -432,6 +435,15 @@ export function TitleDetailView({
                         </div>
                         {v.place && <div className="secondary-text">{v.place}</div>}
                         {v.note && <div className="viewing-note">{v.note}</div>}
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-subtle-btn edit-btn"
+                        title="Upravit zhlédnutí"
+                        aria-label="Upravit zhlédnutí"
+                        onClick={() => setModalMode({ open: true, editing: v })}
+                      >
+                        <Pencil size={17} />
                       </button>
                       <button
                         type="button"
