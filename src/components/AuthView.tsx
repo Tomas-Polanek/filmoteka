@@ -46,8 +46,10 @@ export function AuthView() {
       </div>
       <div className="auth-card">
         <div className="auth-header">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="Filmotéka" className="auth-logo" />
+          <span className="app-icon auth-logo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="Filmotéka" />
+          </span>
           <h1 className="auth-title">Filmotéka</h1>
           <p className="secondary-text">Tvůj osobní deník filmů a seriálů</p>
         </div>

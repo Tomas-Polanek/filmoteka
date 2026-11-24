@@ -7,6 +7,8 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  Github,
   Plus,
   Sparkles,
   Trash2,
@@ -267,6 +269,18 @@ export function SettingsView({
             <span>Co je nového</span>
             <ChevronRight size={18} className="chevron-icon" />
           </button>
+          <a
+            className="ios-row ios-button-row space-between"
+            href="https://github.com/Tomas-Polanek/filmoteka"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="row-with-icon">
+              <Github size={18} />
+              <span>Zdrojový kód na GitHubu</span>
+            </span>
+            <ExternalLink size={16} className="chevron-icon" />
+          </a>
         </div>
       </div>
 

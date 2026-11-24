@@ -150,8 +150,10 @@ export default function HomePage() {
       {/* Desktop Left Sidebar */}
       <aside className="desktop-sidebar">
         <div className="sidebar-brand" onClick={() => setTab("diary")}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="Filmotéka" className="sidebar-logo" />
+          <span className="app-icon sidebar-logo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="Filmotéka" />
+          </span>
           <div>
             <div className="sidebar-title">Filmotéka</div>
             <div className="sidebar-version">

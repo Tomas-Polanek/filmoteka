@@ -2,6 +2,10 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.5.7 (2026-11-25)
+- Ikona aplikace má zaoblený tvar jako ikony na iPhonu.
+- V Nastavení je odkaz na zdrojový kód na GitHubu.
+
 ## 0.5.6 (2026-11-24)
 - Aplikace se jmenuje Filmotéka a má nový popis: Tvůj osobní deník filmů a seriálů.
 

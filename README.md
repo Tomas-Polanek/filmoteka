@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/icon.svg" alt="Filmotéka" width="96" />
+<img src="docs/icon.png" alt="Filmotéka" width="112" />
 
 # Filmotéka
 
