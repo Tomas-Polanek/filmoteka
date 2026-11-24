@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getMyUserId, supabase } from "@/lib/supabase";
 import { fetchTMDBDetail } from "@/lib/tmdb";
 import { TitleSummary } from "@/lib/models";
 
@@ -21,31 +21,41 @@ function randomToken(): string {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export async function listIntegrations(): Promise<Integration[]> {
+// Every call names the account explicitly: admins can see every connection, so an unfiltered
+// delete would remove other users' connections too. Without `userId` it is the signed-in user.
+
+export async function getIntegration(
+  provider: IntegrationProvider,
+  userId?: string
+): Promise<Integration | null> {
+  const uid = userId ?? (await getMyUserId());
   const { data, error } = await supabase
     .from("integrations")
     .select("id, provider, created_at, last_sync_at")
-    .order("created_at");
+    .eq("user_id", uid)
+    .eq("provider", provider)
+    .maybeSingle();
   if (error) throw error;
-  return (data as Integration[]) ?? [];
+  return (data as Integration | null) ?? null;
 }
 
 /**
  * Creates the connection and returns its token. Only the token's hash is stored, so this is the one time
  * the token can be shown; connecting again replaces the old token.
  */
-export async function connectIntegration(provider: IntegrationProvider): Promise<string> {
+export async function connectIntegration(provider: IntegrationProvider, userId?: string): Promise<string> {
+  const uid = userId ?? (await getMyUserId());
   const token = randomToken();
   const tokenHash = await sha256Hex(token);
-  const { error: delErr } = await supabase.from("integrations").delete().eq("provider", provider);
-  if (delErr) throw delErr;
-  const { error } = await supabase.from("integrations").insert({ provider, token_hash: tokenHash });
+  await disconnectIntegration(provider, uid);
+  const { error } = await supabase.from("integrations").insert({ user_id: uid, provider, token_hash: tokenHash });
   if (error) throw error;
   return token;
 }
 
-export async function disconnectIntegration(provider: IntegrationProvider): Promise<void> {
-  const { error } = await supabase.from("integrations").delete().eq("provider", provider);
+export async function disconnectIntegration(provider: IntegrationProvider, userId?: string): Promise<void> {
+  const uid = userId ?? (await getMyUserId());
+  const { error } = await supabase.from("integrations").delete().eq("user_id", uid).eq("provider", provider);
   if (error) throw error;
 }
 

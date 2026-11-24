@@ -6,8 +6,8 @@ import { formatDayCzech } from "@/lib/models";
 import {
   connectIntegration,
   disconnectIntegration,
+  getIntegration,
   Integration,
-  listIntegrations,
 } from "@/lib/integrations";
 
 const SETUP_DOC = "https://github.com/Tomas-Polanek/filmoteka/blob/main/integrations/README.md";
@@ -21,25 +21,45 @@ function formatDateTime(iso: string): string {
 }
 
 export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
-  const [jellyfin, setJellyfin] = useState<Integration | null>(null);
+  return (
+    <div className="screen-container">
+      <div className="top-navbar">
+        <button type="button" className="nav-back-btn" onClick={onBack}>
+          <ChevronLeft size={22} />
+          <span>Nastavení</span>
+        </button>
+        <div className="nav-inline-title">Propojení</div>
+        <span className="nav-btn-placeholder" />
+      </div>
+      <JellyfinConnection />
+    </div>
+  );
+}
+
+/**
+ * Jellyfin connection of the signed-in user, or of `userId` when an admin manages another account
+ * (`username` then labels the texts).
+ */
+export function JellyfinConnection({ userId, username }: { userId?: string; username?: string }) {
+  const [conn, setConn] = useState<Integration | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const forOther = userId !== undefined;
 
   const load = useCallback(async () => {
     try {
-      const list = await listIntegrations();
-      setJellyfin(list.find((i) => i.provider === "jellyfin") ?? null);
+      setConn(await getIntegration("jellyfin", userId));
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Nepodařilo se načíst propojení.");
     } finally {
       setLoaded(true);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     void load();
@@ -48,7 +68,7 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
   async function connect() {
     setBusy(true);
     try {
-      setToken(await connectIntegration("jellyfin"));
+      setToken(await connectIntegration("jellyfin", userId));
       setCopied(false);
       await load();
     } catch (e) {
@@ -62,7 +82,7 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
     setConfirmDisconnect(false);
     setBusy(true);
     try {
-      await disconnectIntegration("jellyfin");
+      await disconnectIntegration("jellyfin", userId);
       setToken(null);
       await load();
     } catch (e) {
@@ -79,22 +99,13 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="screen-container">
-      <div className="top-navbar">
-        <button type="button" className="nav-back-btn" onClick={onBack}>
-          <ChevronLeft size={22} />
-          <span>Nastavení</span>
-        </button>
-        <div className="nav-inline-title">Propojení</div>
-        <span className="nav-btn-placeholder" />
-      </div>
-
+    <>
       <div className="ios-section">
         <div className="ios-section-header">Jellyfin</div>
         <div className="ios-card">
           {!loaded ? (
             <div className="ios-row secondary-text">Načítám…</div>
-          ) : jellyfin ? (
+          ) : conn ? (
             <>
               <div className="ios-row space-between">
                 <span>Stav</span>
@@ -103,7 +114,7 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
               <div className="ios-row space-between">
                 <span>Poslední synchronizace</span>
                 <span className="secondary-text">
-                  {jellyfin.last_sync_at ? formatDateTime(jellyfin.last_sync_at) : "zatím žádná"}
+                  {conn.last_sync_at ? formatDateTime(conn.last_sync_at) : "zatím žádná"}
                 </span>
               </div>
               <button
@@ -135,8 +146,9 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
           )}
         </div>
         <div className="ios-section-footer secondary-text">
-          Dokoukané filmy a epizody z Jellyfinu se samy zapíšou do deníku s místem „Jellyfin“. Seriál se zapíše
-          jednou za den a sezónu. Hodnocení a poznámku doplníš sám.
+          {forOther
+            ? `Dokoukané filmy a epizody z Jellyfinu se zapíšou do deníku uživatele ${username ?? ""}. Jeho deník tím neuvidíš.`
+            : "Dokoukané filmy a epizody z Jellyfinu se samy zapíšou do deníku s místem „Jellyfin“. Seriál se zapíše jednou za den a sezónu. Hodnocení a poznámku doplníš sám."}
         </div>
       </div>
 
@@ -157,11 +169,12 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
             </button>
           </div>
           <div className="ios-section-footer secondary-text">
-            Klíč se ukáže jen teď. Vlož ho do nastavení synchronizace na serveru s Jellyfinem podle{" "}
+            Klíč se ukáže jen teď. Na serveru s Jellyfinem ho vlož do seznamu <code>users</code> k jménu
+            {forOther ? " tohoto člověka" : " svého účtu"} v Jellyfinu (viz{" "}
             <a href={SETUP_DOC} target="_blank" rel="noopener noreferrer" className="accent-text">
-              návodu
+              návod
             </a>
-            . Kdo klíč zná, může ti do deníku přidávat zhlédnutí, tak ho nikomu neposílej.
+            ). Kdo klíč zná, může do deníku přidávat zhlédnutí, tak ho nikomu neposílej.
           </div>
         </div>
       )}
@@ -188,6 +201,6 @@ export function IntegrationsScreen({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
