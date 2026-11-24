@@ -29,7 +29,7 @@ import {
 import { ACCENTS, AccentOption, formatDayCzech, ThemeOption } from "@/lib/models";
 import { AdminAPI, AdminUser } from "@/lib/admin";
 import { APP_VERSION, BUILD_NUMBER, IS_BETA, RELEASES } from "@/lib/changelog";
-import { IntegrationsScreen } from "./IntegrationsScreen";
+import { IntegrationsScreen, JellyfinConnection } from "./IntegrationsScreen";
 import { Select } from "./Select";
 
 type SubScreen =
@@ -930,6 +930,8 @@ function UserDetailScreen({
           </button>
         </div>
       </div>
+
+      {!isSelf && <JellyfinConnection userId={user.user_id} username={user.username} />}
 
       {error && (
         <div className="ios-section">

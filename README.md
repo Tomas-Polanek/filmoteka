@@ -75,7 +75,7 @@ Struktura:
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0006_integrations.sql`) → Run.
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0007_integrations_admin.sql`) → Run.
 2. Authentication → Sign In / Providers → Email: provider nech zapnutý a **„Confirm email“ vypni**.
 3. Vytvoř první účet (Authentication → Users → Add user, e-mail `<jméno>@users.filmoteka.app`) a udělej z něj správce (viz [Správa účtů](#6-správa-účtů-a-zapomenuté-heslo)).
 4. **Vypni „Allow new users to sign up“** (Authentication → Sign In / Providers). Jinak by si účet mohl založit kdokoli přímo přes API. Zakládání účtů v aplikaci funguje dál, funkce `admin` používá service role.

@@ -92,3 +92,33 @@ test('a manual viewing keeps its poster on top of a newer synced one without pos
   );
   assert.deepEqual(rows, [{ poster_path: '/poster.jpg', view_count: 2 }]);
 });
+
+test('admins create and remove connections for other users; regular users cannot', async () => {
+  await assert.rejects(
+    as('authenticated', B, () =>
+      db.query(`insert into public.integrations (user_id, provider, token_hash) values ($1, 'plex', $2)`, [A, hash('b-for-a')]),
+    ),
+  );
+
+  await db.query(`update public.profiles set role = 'admin' where user_id = $1`, [B]);
+  try {
+    await as('authenticated', B, () =>
+      db.query(`insert into public.integrations (user_id, provider, token_hash) values ($1, 'plex', $2)`, [A, hash('b-for-a')]),
+    );
+    const { rows } = await sync('b-for-a', [movie('plex:1', '2026-11-02')]);
+    assert.equal(rows[0].added, 1);
+    const own = await as('authenticated', A, () =>
+      db.query(`select source from public.viewings where source_ref = 'plex:1'`),
+    );
+    assert.deepEqual(own.rows, [{ source: 'plex' }]);
+    // the admin still cannot read A's diary
+    const peek = await as('authenticated', B, () => db.query(`select count(*)::int as n from public.viewings`));
+    assert.equal(peek.rows[0].n, 0);
+    await as('authenticated', B, () =>
+      db.query(`delete from public.integrations where user_id = $1 and provider = 'plex'`, [A]),
+    );
+    await assert.rejects(sync('b-for-a', []), /invalid token/);
+  } finally {
+    await db.query(`update public.profiles set role = 'user' where user_id = $1`, [B]);
+  }
+});

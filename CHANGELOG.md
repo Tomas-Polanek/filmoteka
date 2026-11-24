@@ -2,6 +2,9 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.6.1 (2026-11-25)
+- Správce propojí Jellyfin i za ostatní: Nastavení → Uživatelé → uživatel → Jellyfin. Jejich deník tím nevidí.
+
 ## 0.6.0 (2026-11-25)
 - Propojení s Jellyfinem: dokoukané filmy a epizody se samy zapíšou do deníku (Nastavení → Propojení).
 - Zhlédnutí bez plakátu si plakát a český název doplní z TMDB samo při otevření deníku.

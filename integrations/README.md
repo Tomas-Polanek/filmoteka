@@ -9,8 +9,8 @@ Dokoukané filmy a epizody z Jellyfinu se samy zapíšou do deníku s místem �
 
 ## Nastavení (jednou)
 
-1. **Databáze:** v Supabase SQL Editoru spusť `supabase/migrations/0006_integrations.sql`.
-2. **Klíč do Filmotéky:** v aplikaci **Nastavení → Propojení → Jellyfin → Propojit Jellyfin** a klíč si zkopíruj. Ukáže se jen jednou (kdyžtak vytvoř nový).
+1. **Databáze:** v Supabase SQL Editoru spusť `supabase/migrations/0006_integrations.sql` a `0007_integrations_admin.sql`.
+2. **Klíč do Filmotéky:** v aplikaci **Nastavení → Propojení → Jellyfin → Propojit Jellyfin** a klíč si zkopíruj. Ukáže se jen jednou (kdyžtak vytvoř nový). Správce může klíč vytvořit i za ostatní v **Nastavení → Uživatelé → uživatel → Jellyfin**.
 3. **API klíč Jellyfinu:** Jellyfin → Ovládací panel → **Klíče API** → `+` → název `Filmotéka`.
 4. **Skript na Pi:** zkopíruj složku `integrations/` z repozitáře na Pi (z počítače s repozitářem):
    ```bash

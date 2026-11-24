@@ -4,11 +4,16 @@ export interface Release {
   items: string[];
 }
 
-export const APP_VERSION = "0.6.0";
-export const BUILD_NUMBER = "17";
+export const APP_VERSION = "0.6.1";
+export const BUILD_NUMBER = "18";
 export const IS_BETA = APP_VERSION.startsWith("0.");
 
 export const RELEASES: Release[] = [
+  {
+    version: "0.6.1",
+    date: "2026-11-25",
+    items: ["Správce propojí Jellyfin i za ostatní: Nastavení → Uživatelé → uživatel → Jellyfin. Jejich deník tím nevidí."],
+  },
   {
     version: "0.6.0",
     date: "2026-11-25",
