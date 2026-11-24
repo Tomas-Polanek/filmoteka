@@ -2,6 +2,10 @@
 
 Formát: `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře.
 
+## 0.6.0 (2026-11-25)
+- Propojení s Jellyfinem: dokoukané filmy a epizody se samy zapíšou do deníku (Nastavení → Propojení).
+- Zhlédnutí bez plakátu si plakát a český název doplní z TMDB samo při otevření deníku.
+
 ## 0.5.9 (2026-11-25)
 - Kalendář má viditelnou mřížku: každý den je samostatné políčko.
 

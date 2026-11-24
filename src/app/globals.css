@@ -1094,6 +1094,13 @@ a.ios-button-row {
   gap: 10px;
 }
 
+.integration-token {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  word-break: break-all;
+  user-select: all;
+}
+
 .space-between {
   justify-content: space-between;
 }

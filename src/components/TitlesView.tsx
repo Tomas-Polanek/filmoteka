@@ -19,6 +19,7 @@ import {
   posterURL,
   prefetchTMDBDetail,
 } from "@/lib/tmdb";
+import { fillMissingPosters } from "@/lib/integrations";
 import { Poster } from "./Poster";
 import { Select } from "./Select";
 import { AddViewingModal } from "./AddViewingModal";
@@ -149,6 +150,11 @@ export function TitlesView({ places }: { places: string[] }) {
       cachedTitles = list;
       setTitles(list);
       setError(null);
+      if (list.some((t) => !t.poster_path)) {
+        void fillMissingPosters(list).then((changed) => {
+          if (changed > 0) void load();
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chyba při načítání deníku.");
     } finally {

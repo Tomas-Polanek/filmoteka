@@ -31,6 +31,7 @@ Zaznamenej, co jsi viděl, kdy, kde a jak se ti to líbilo. Vždycky uvidíš, k
 - **Zhlédnutí s přesností na den, měsíc nebo rok,** místo (Netflix, kino, Jellyfin…), hodnocení 1–10, poznámka a u seriálů sezóna.
 - **Kalendář a časová osa:** co jsi kdy viděl, s plakáty přímo ve dnech.
 - **Chci vidět:** seznam titulů na později, jedním klepnutím přesuneš do deníku.
+- **Automaticky z Jellyfinu:** dokoukané filmy a epizody se samy zapíšou do deníku ([návod](integrations/README.md)).
 - **Soukromé:** každý uživatel vidí jen svá data (Supabase RLS), ani správce nevidí cizí deník.
 - **Na iPhonu jako aplikace:** PWA na celou obrazovku, bez App Storu a bez vypršení.
 - **Vzhled:** světlý / tmavý motiv a volitelná barva akcentu.
@@ -65,6 +66,7 @@ Struktura:
 - `src/` aplikace a serverové API routy (`/api/tmdb`, `/api/admin`, `/api/keepalive`)
 - `public/` PWA manifest a ikony
 - `supabase/` migrace databáze, testy izolace dat (`npm run test:db`) a Edge Functions
+- `integrations/` synchronizace z Jellyfinu (skript pro počítač s Jellyfinem a návod)
 - `docs/screenshots/` obrázky do tohoto README (demo účet s ukázkovými daty)
 
 Účty nemají e-mail: přihlašuje se uživatelským jménem a heslem (např. `bohumil`). Interní e-mail `<jméno>@users.filmoteka.app` se nikde neukazuje. **Veřejná registrace není**, účty zakládá správce v **Nastavení → Uživatelé**.
@@ -73,7 +75,7 @@ Struktura:
 
 ## 1. Databáze (Supabase)
 
-1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0005_remove_family_add_profiles.sql`) → Run.
+1. Supabase Dashboard → SQL Editor → postupně vlož obsah každého souboru `supabase/migrations/*.sql` (`0001_init.sql` až `0006_integrations.sql`) → Run.
 2. Authentication → Sign In / Providers → Email: provider nech zapnutý a **„Confirm email“ vypni**.
 3. Vytvoř první účet (Authentication → Users → Add user, e-mail `<jméno>@users.filmoteka.app`) a udělej z něj správce (viz [Správa účtů](#6-správa-účtů-a-zapomenuté-heslo)).
 4. **Vypni „Allow new users to sign up“** (Authentication → Sign In / Providers). Jinak by si účet mohl založit kdokoli přímo přes API. Zakládání účtů v aplikaci funguje dál, funkce `admin` používá service role.

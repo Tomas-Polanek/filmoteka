@@ -1,0 +1,10 @@
+{
+  "jellyfin_url": "http://127.0.0.1:8096",
+  "jellyfin_api_key": "API klíč z Jellyfinu",
+  "supabase_url": "https://<project-ref>.supabase.co",
+  "supabase_publishable_key": "sb_publishable_...",
+  "since": "2026-11-25",
+  "users": [
+    { "jellyfin_user": "tomas", "token": "klíč z Filmotéky" }
+  ]
+}

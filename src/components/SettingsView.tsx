@@ -29,6 +29,7 @@ import {
 import { ACCENTS, AccentOption, formatDayCzech, ThemeOption } from "@/lib/models";
 import { AdminAPI, AdminUser } from "@/lib/admin";
 import { APP_VERSION, BUILD_NUMBER, IS_BETA, RELEASES } from "@/lib/changelog";
+import { IntegrationsScreen } from "./IntegrationsScreen";
 import { Select } from "./Select";
 
 type SubScreen =
@@ -38,7 +39,8 @@ type SubScreen =
   | { type: "users" }
   | { type: "userDetail"; user: AdminUser; isLastAdmin: boolean }
   | { type: "userPassword"; user: AdminUser }
-  | { type: "changelog" };
+  | { type: "changelog" }
+  | { type: "integrations" };
 
 export function SettingsView({
   profile,
@@ -138,6 +140,10 @@ export function SettingsView({
     return <ChangelogScreen onBack={() => setSub({ type: "root" })} />;
   }
 
+  if (sub.type === "integrations") {
+    return <IntegrationsScreen onBack={() => setSub({ type: "root" })} />;
+  }
+
   return (
     <div className="screen-container">
       <div className="top-header-row">
@@ -228,6 +234,20 @@ export function SettingsView({
             onClick={() => setSub({ type: "places" })}
           >
             <span>Moje místa</span>
+            <ChevronRight size={18} className="chevron-icon" />
+          </button>
+        </div>
+      </div>
+
+      <div className="ios-section">
+        <div className="ios-section-header">Propojení</div>
+        <div className="ios-card">
+          <button
+            type="button"
+            className="ios-row ios-button-row space-between"
+            onClick={() => setSub({ type: "integrations" })}
+          >
+            <span>Jellyfin</span>
             <ChevronRight size={18} className="chevron-icon" />
           </button>
         </div>
