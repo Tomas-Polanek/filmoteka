@@ -7,6 +7,7 @@ struct AuthView: View {
     @State private var busy = false
     @State private var error: String?
     @State private var info: String?
+    @State private var forgotten = false
 
     private var canSubmit: Bool {
         !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty && !busy
@@ -36,8 +37,18 @@ struct AuthView: View {
                     Button("Registrovat") { Task { await submit(signUp: true) } }
                 }
                 .disabled(!canSubmit)
+
+                // Accounts have no e-mail, so there is nothing to send a reset link to: an admin sets the password.
+                Section {
+                    Button("Zapomenuté heslo?") { forgotten = true }
+                }
             }
             .navigationTitle("Filmoteka")
+            .alert("Zapomenuté heslo", isPresented: $forgotten) {
+                Button("Rozumím", role: .cancel) {}
+            } message: {
+                Text("Účty nemají e-mail, takže heslo nejde poslat. Požádej správce, ať ti v Nastavení → Uživatelé nastaví nové. Pak se přihlásíš a můžeš si ho v Nastavení změnit.")
+            }
         }
     }
 

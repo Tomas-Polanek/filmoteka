@@ -75,6 +75,12 @@ where i.user_id = u.id and i.provider = 'email' and u.email like '%@users.filmot
 ```
 Pak se přihlásí jménem a dosavadním heslem. Původní e-maily tím z projektu zmizí.
 
+**Zapomenuté heslo:** účty nemají e-mail, takže se heslo neposílá. Uživateli ho nastaví správce (Nastavení → Uživatelé → uživatel → Nastavit heslo). Zapomene-li heslo poslední správce, nastav ho v SQL Editoru (netestováno):
+```sql
+update auth.users set encrypted_password = extensions.crypt('nove-heslo', extensions.gen_salt('bf'))
+where email = 'tvoje-jmeno@users.filmoteka.app';
+```
+
 ## 6. Verze a „Co je nového“
 
 Aplikace je v betě (verze `0.x.y`). Každá změna, kterou uživatel uvidí, dostane záznam v `CHANGELOG.md`:

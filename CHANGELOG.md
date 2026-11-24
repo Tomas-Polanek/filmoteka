@@ -2,6 +2,9 @@
 
 Formát (aplikace ho čte, drž ho přesně): `## <verze> (<YYYY-MM-DD>)`, pod ním odrážky `- `. Nejnovější verze nahoře a musí se shodovat s `MARKETING_VERSION` v `ios/project.yml`, jinak build selže.
 
+## 0.4.1 (2026-11-24)
+- Na přihlášení je „Zapomenuté heslo?“ s návodem: správce ti nastaví nové heslo.
+
 ## 0.4.0 (2026-11-23)
 - Přihlášení a registrace jen jménem a heslem, bez e-mailu.
 - Role Správce a Uživatel. Správce zakládá a maže účty, mění hesla a přiděluje roli.
