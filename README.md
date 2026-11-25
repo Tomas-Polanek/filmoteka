@@ -159,3 +159,7 @@ Pak otevři `http://localhost:3000`.
 ## Verze
 
 Historie změn je v [CHANGELOG.md](CHANGELOG.md) a v aplikaci v **Nastavení → Co je nového**.
+
+## Licence
+
+[MIT](LICENSE) © 2026 Tomáš Polánek
